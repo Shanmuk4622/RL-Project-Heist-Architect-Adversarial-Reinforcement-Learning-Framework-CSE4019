@@ -4,9 +4,9 @@ Heist Architect — Main Entry Point
 CLI interface for training, demo, and visualization.
 
 Usage:
-    python main.py train [--episodes N] [--grid-size N]
-    python main.py demo
-    python main.py visualize
+    python main.py train [--episodes N] [--grid-size N] [--resume]
+    python main.py demo [--grid-size N] [--checkpoint N]
+    python main.py visualize [--port N]
 """
 
 import argparse
@@ -46,7 +46,7 @@ def cmd_train(args):
         log_dir=args.log_dir,
     )
     
-    trainer.train()
+    trainer.train(resume=args.resume)
 
 
 def cmd_demo(args):
@@ -54,6 +54,8 @@ def cmd_demo(args):
     from heist_architect.environment import HeistEnvironment, EnvironmentConfig
     from heist_architect.agents.architect import ArchitectAgent
     from heist_architect.agents.solver import SolverAgent
+    import glob
+    import re
     
     config = EnvironmentConfig(
         grid_rows=args.grid_size,
@@ -73,16 +75,33 @@ def cmd_demo(args):
         grid_cols=config.grid_cols,
     )
     
-    # Load models if available
-    arch_path = os.path.join(args.save_dir, f"architect_ep{args.checkpoint}.pt")
-    solver_path = os.path.join(args.save_dir, f"solver_ep{args.checkpoint}.pt")
+    # Auto-find latest checkpoint if --checkpoint not specified
+    checkpoint = args.checkpoint
+    if checkpoint == 0:
+        # Try to find latest
+        pattern = os.path.join(args.save_dir, "architect_ep*.pt")
+        files = glob.glob(pattern)
+        if files:
+            episodes = []
+            for f in files:
+                match = re.search(r'architect_ep(\d+)\.pt', f)
+                if match:
+                    episodes.append(int(match.group(1)))
+            checkpoint = max(episodes) if episodes else 0
     
-    if os.path.exists(arch_path):
-        architect.load(arch_path)
-        print(f"Loaded Architect from {arch_path}")
-    if os.path.exists(solver_path):
-        solver.load(solver_path)
-        print(f"Loaded Solver from {solver_path}")
+    # Load models if available
+    if checkpoint > 0:
+        arch_path = os.path.join(args.save_dir, f"architect_ep{checkpoint}.pt")
+        solver_path = os.path.join(args.save_dir, f"solver_ep{checkpoint}.pt")
+        
+        if os.path.exists(arch_path):
+            architect.load(arch_path)
+            print(f"Loaded Architect from {arch_path}")
+        if os.path.exists(solver_path):
+            solver.load(solver_path)
+            print(f"Loaded Solver from {solver_path}")
+    else:
+        print("No checkpoints found. Running with untrained agents.")
     
     # Generate layout
     walls, cameras, guards = architect.generate_layout(temperature=0.5)
@@ -148,7 +167,7 @@ def main():
     # Train command
     train_parser = subparsers.add_parser("train", help="Run adversarial training")
     train_parser.add_argument("--episodes", type=int, default=500,
-                              help="Total training episodes")
+                              help="Total training episodes (default: 500)")
     train_parser.add_argument("--grid-size", type=int, default=20,
                               help="Grid dimensions (NxN)")
     train_parser.add_argument("--max-steps", type=int, default=200,
@@ -159,13 +178,15 @@ def main():
                               help="Model save directory")
     train_parser.add_argument("--log-dir", default="logs",
                               help="Log directory")
+    train_parser.add_argument("--resume", action="store_true",
+                              help="Resume from latest checkpoint")
     
     # Demo command
     demo_parser = subparsers.add_parser("demo", help="Run a demo episode")
     demo_parser.add_argument("--grid-size", type=int, default=20)
     demo_parser.add_argument("--save-dir", default="checkpoints")
-    demo_parser.add_argument("--checkpoint", type=int, default=500,
-                             help="Checkpoint episode to load")
+    demo_parser.add_argument("--checkpoint", type=int, default=0,
+                             help="Checkpoint episode to load (0 = auto-detect latest)")
     
     # Visualize command
     viz_parser = subparsers.add_parser("visualize", help="Start visualization server")

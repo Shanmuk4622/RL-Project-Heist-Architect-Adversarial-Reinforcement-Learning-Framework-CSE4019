@@ -121,13 +121,22 @@ class SolverAgent:
         
         self.network.train()
         
-        # Convert to tensors
-        states = torch.FloatTensor(np.array(self.states)).to(DEVICE)
-        actions = torch.LongTensor(self.actions).to(DEVICE)
-        old_log_probs = torch.FloatTensor(self.log_probs).to(DEVICE)
-        values = torch.FloatTensor(self.values).to(DEVICE)
-        rewards = torch.FloatTensor(self.rewards).to(DEVICE)
-        dones = torch.FloatTensor(self.dones).to(DEVICE)
+        # Synchronize buffer lengths (they can desync by 1 in edge cases)
+        min_len = min(len(self.states), len(self.actions), 
+                      len(self.log_probs), len(self.values),
+                      len(self.rewards), len(self.dones))
+        
+        if min_len == 0:
+            self._clear_buffers()
+            return {"solver_loss": 0.0}
+        
+        # Convert to tensors (truncated to min_len)
+        states = torch.FloatTensor(np.array(self.states[:min_len])).to(DEVICE)
+        actions = torch.LongTensor(self.actions[:min_len]).to(DEVICE)
+        old_log_probs = torch.FloatTensor(self.log_probs[:min_len]).to(DEVICE)
+        values = torch.FloatTensor(self.values[:min_len]).to(DEVICE)
+        rewards = torch.FloatTensor(self.rewards[:min_len]).to(DEVICE)
+        dones = torch.FloatTensor(self.dones[:min_len]).to(DEVICE)
         
         # Compute GAE advantages
         advantages = self._compute_gae(rewards, values, dones)
@@ -203,14 +212,18 @@ class SolverAgent:
         }
         
         # Clear buffers
+        self._clear_buffers()
+        
+        return metrics
+    
+    def _clear_buffers(self):
+        """Clear all experience buffers."""
         self.states.clear()
         self.actions.clear()
         self.log_probs.clear()
         self.values.clear()
         self.rewards.clear()
         self.dones.clear()
-        
-        return metrics
     
     def _compute_gae(self, rewards: torch.Tensor, values: torch.Tensor,
                      dones: torch.Tensor) -> torch.Tensor:
@@ -240,7 +253,7 @@ class SolverAgent:
     
     def load(self, path: str):
         """Load a saved model."""
-        checkpoint = torch.load(path, map_location=DEVICE)
+        checkpoint = torch.load(path, map_location=DEVICE, weights_only=False)
         self.network.load_state_dict(checkpoint["network"])
         self.optimizer.load_state_dict(checkpoint["optimizer"])
         self.episode_count = checkpoint.get("episode_count", 0)

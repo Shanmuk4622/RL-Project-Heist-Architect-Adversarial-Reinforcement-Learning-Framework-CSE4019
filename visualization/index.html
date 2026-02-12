@@ -37,6 +37,10 @@
                     <span class="device-icon">⚡</span>
                     <span>GPU</span>
                 </div>
+                <div class="episode-badge" id="episodeBadge">
+                    <span>Ep: </span>
+                    <span id="globalEpisode">0</span>
+                </div>
             </div>
         </header>
 
@@ -60,14 +64,45 @@
                     </div>
                 </div>
                 <div class="legend">
-                    <div class="legend-item"><span class="legend-color" style="background: #e8ecf4;"></span>Empty</div>
-                    <div class="legend-item"><span class="legend-color" style="background: #6b7280;"></span>Wall</div>
-                    <div class="legend-item"><span class="legend-color" style="background: #10b981;"></span>Start</div>
-                    <div class="legend-item"><span class="legend-color" style="background: #f43f5e;"></span>Vault</div>
-                    <div class="legend-item"><span class="legend-color" style="background: #8b5cf6;"></span>Camera</div>
-                    <div class="legend-item"><span class="legend-color" style="background: #f97316;"></span>Guard</div>
-                    <div class="legend-item"><span class="legend-color" style="background: #eab308;"></span>Solver</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #1a1f35;"></span>Empty</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #4a5568;"></span>Wall</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #34d399;"></span>Start</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #fb7185;"></span>Vault</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #a78bfa;"></span>Camera</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #fb923c;"></span>Guard</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #fbbf24;"></span>Solver</div>
                     <div class="legend-item"><span class="legend-color vision-cone"></span>Vision</div>
+                </div>
+
+                <!-- Game Log Panel (below grid) -->
+                <div class="game-log-panel">
+                    <div class="panel-header">
+                        <h2>📋 Game Log</h2>
+                        <span class="log-count" id="logCount">0 episodes</span>
+                    </div>
+                    <div class="game-log-container" id="gameLogContainer">
+                        <table class="game-log-table" id="gameLogTable">
+                            <thead>
+                                <tr>
+                                    <th>Ep</th>
+                                    <th>Phase</th>
+                                    <th>Budget</th>
+                                    <th>Layout</th>
+                                    <th>Solve</th>
+                                    <th>Detect</th>
+                                    <th>Arch R</th>
+                                    <th>Solv R</th>
+                                    <th>Steps</th>
+                                    <th>Mode</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gameLogBody">
+                                <tr class="log-empty">
+                                    <td colspan="10">No episodes yet — start training or run interactive episodes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -98,6 +133,66 @@
                         </div>
                         <span class="progress-text" id="progressText">0%</span>
                     </div>
+                </div>
+
+                <!-- Interactive Episode Controls -->
+                <div class="card interactive-card">
+                    <h3>🎮 Interactive Episode</h3>
+                    <p class="card-desc">Run custom episodes with manual control over parameters.</p>
+
+                    <div class="control-row">
+                        <div class="control-group half">
+                            <label>Budget</label>
+                            <input type="number" id="intBudget" value="15" min="1" max="50" class="input">
+                        </div>
+                        <div class="control-group half">
+                            <label>Episodes</label>
+                            <input type="number" id="intEpisodes" value="1" min="1" max="100" class="input">
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group half">
+                            <label>Temperature</label>
+                            <input type="range" id="intTemperature" min="0.1" max="3.0" step="0.1" value="1.0"
+                                class="slider">
+                            <span class="slider-value" id="tempValue">1.0</span>
+                        </div>
+                        <div class="control-group half">
+                            <label>Solver Attempts</label>
+                            <input type="number" id="intSolverAttempts" value="20" min="1" max="100" class="input">
+                        </div>
+                    </div>
+
+                    <div class="toggle-row">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="intFreezeArchitect">
+                            <span class="toggle-switch"></span>
+                            <span>Freeze Architect</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="intFreezeSolver">
+                            <span class="toggle-switch"></span>
+                            <span>Freeze Solver</span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-row">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="intAllowCameras" checked>
+                            <span class="toggle-switch"></span>
+                            <span>Allow Cameras</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="intAllowGuards" checked>
+                            <span class="toggle-switch"></span>
+                            <span>Allow Guards</span>
+                        </label>
+                    </div>
+
+                    <button class="btn btn-interactive" id="btnInteractive">
+                        <span>▶️</span> Run Interactive Episode
+                    </button>
                 </div>
 
                 <!-- Live Metrics -->

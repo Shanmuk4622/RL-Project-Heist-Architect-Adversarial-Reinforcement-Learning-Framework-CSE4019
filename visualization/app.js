@@ -1,644 +1,632 @@
 /**
- * Heist Architect — Visualization Dashboard
- * Canvas-based 2D renderer + chart system + WebSocket integration
- * BRIGHT THEME — vibrant color palette
+ * Heist Architect — Dashboard Client
+ * ====================================
+ * Handles WebSocket communication, grid rendering, charts,
+ * interactive episodes, and game log display.
  */
 
-// ============================================================
-// Configuration — Bright Color Palette
-// ============================================================
+// ==================================================================
+// Configuration
+// ==================================================================
 
 const CONFIG = {
     TILE_COLORS: {
-        0: '#e8ecf4',   // Empty  (soft lavender-gray)
-        1: '#6b7280',   // Wall   (cool gray)
-        2: '#10b981',   // Start  (emerald green)
-        3: '#f43f5e',   // Vault  (rose red)
-        4: '#8b5cf6',   // Camera (violet purple)
-        5: '#f97316',   // Guard  (vibrant orange)
+        0: '#1a1f35',   // Empty  (dark navy)
+        1: '#4a5568',   // Wall   (slate gray)
+        2: '#34d399',   // Start  (neon emerald)
+        3: '#fb7185',   // Vault  (hot pink)
+        4: '#a78bfa',   // Camera (bright violet)
+        5: '#fb923c',   // Guard  (vivid orange)
     },
-    WALL_ACCENT: '#9ca3af',
-    VISION_COLOR: 'rgba(244, 63, 94, 0.14)',
-    VISION_BORDER: 'rgba(244, 63, 94, 0.28)',
-    SOLVER_COLOR: '#eab308',
-    SOLVER_GLOW_INNER: 'rgba(234, 179, 8, 0.35)',
-    SOLVER_GLOW_OUTER: 'rgba(234, 179, 8, 0)',
-    SOLVER_TRAIL_COLOR: 'rgba(234, 179, 8, 0.20)',
-    GRID_LINE_COLOR: 'rgba(100, 116, 180, 0.08)',
-    CAMERA_CONE_COLOR: 'rgba(139, 92, 246, 0.18)',
-    CAMERA_BODY: '#8b5cf6',
-    CAMERA_DIR: '#a78bfa',
-    GUARD_PATROL_COLOR: 'rgba(249, 115, 22, 0.18)',
-    GUARD_BODY: '#f97316',
-    GUARD_DIR: '#fb923c',
-    CANVAS_BG: '#e8ecf4',
-    CHART_BG: 'rgba(248, 249, 253, 0.95)',
-    CHART_GRID: 'rgba(100, 116, 180, 0.08)',
-    CHART_LABEL: 'rgba(90, 95, 128, 0.6)',
-    CHART_LEGEND: 'rgba(90, 95, 128, 0.75)',
-    DETECTION_X: '#ef4444',
+    SOLVER_COLOR: '#fbbf24',           // Bright gold
+    SOLVER_GLOW: 'rgba(251, 191, 36, 0.50)',
+    GRID_LINE: 'rgba(99, 130, 255, 0.12)',
+    VISION_CONE: 'rgba(232, 121, 249, 0.18)',
+    VISION_EDGE: 'rgba(232, 121, 249, 0.4)',
+    TRAIL_COLOR: 'rgba(56, 189, 248, 0.45)',
+    CHART: {
+        BG: '#111528',
+        GRID: 'rgba(99, 130, 255, 0.08)',
+        LABEL: '#6b75a0',
+        SOLVE: '#34d399',
+        DETECT: '#fb7185',
+        ARCH_REWARD: '#a78bfa',
+        SOLVER_REWARD: '#fb923c',
+    }
 };
 
-// ============================================================
+// Wall shading constants
+const WALL_TOP = '#5a647a';
+const WALL_SHADOW = '#2d3348';
+
+// ==================================================================
 // State
-// ============================================================
+// ==================================================================
 
-const state = {
-    envState: null,
-    metrics: {
-        episode: [], solve_rate: [], detection_rate: [],
-        architect_reward: [], solver_reward: []
-    },
-    showVisibility: true,
-    activeChart: 'rewards',
-    isTraining: false,
-    totalEpisodes: 500,
-    animFrame: 0,
-};
+let socket = null;
+let gridData = null;
+let chartData = { episodes: [], solve_rates: [], detection_rates: [], arch_rewards: [], solver_rewards: [] };
+let activeChart = 'rewards';
+let showVision = true;
+let totalTrainingEpisodes = 500;
+let gameLog = [];
 
-// ============================================================
-// Canvas Setup
-// ============================================================
+// ==================================================================
+// DOM Elements
+// ==================================================================
 
 const gridCanvas = document.getElementById('gridCanvas');
 const gridCtx = gridCanvas.getContext('2d');
 const chartCanvas = document.getElementById('chartCanvas');
 const chartCtx = chartCanvas.getContext('2d');
 
-function resizeCanvas() {
-    const container = gridCanvas.parentElement;
-    const size = Math.min(container.clientWidth - 40, 600);
-    gridCanvas.width = size;
-    gridCanvas.height = size;
+const canvasOverlay = document.getElementById('canvasOverlay');
+const tickCounter = document.getElementById('tickCounter');
+const statusIndicator = document.getElementById('statusIndicator');
+const progressContainer = document.getElementById('progressContainer');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const globalEpisodeEl = document.getElementById('globalEpisode');
+
+// Interactive controls
+const tempSlider = document.getElementById('intTemperature');
+const tempValue = document.getElementById('tempValue');
+
+// ==================================================================
+// Initialization
+// ==================================================================
+
+function init() {
+    socket = io();
+    setupSocketEvents();
+    setupUIEvents();
+    drawEmptyGrid();
+    renderChart();
+
+    // Load game log on connect
+    fetch('/api/game_log')
+        .then(r => r.json())
+        .then(data => {
+            if (Array.isArray(data) && data.length > 0) {
+                gameLog = data;
+                renderGameLog();
+            }
+        })
+        .catch(() => { });
 }
 
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+// ==================================================================
+// Socket Events
+// ==================================================================
 
-// ============================================================
-// Grid Renderer
-// ============================================================
+function setupSocketEvents() {
+    socket.on('connect', () => {
+        setStatus('Connected', 'connected');
+    });
 
-function renderGrid(envState) {
-    if (!envState || !envState.grid) return;
+    socket.on('disconnect', () => {
+        setStatus('Disconnected', 'disconnected');
+    });
 
-    const grid = envState.grid;
+    socket.on('training_started', (data) => {
+        totalTrainingEpisodes = data.episodes;
+        setStatus('Training...', 'training');
+        progressContainer.style.display = 'flex';
+        canvasOverlay.style.display = 'none';
+        setButtonsDisabled(true);
+
+        if (data.resume_from > 0) {
+            console.log(`Resuming from episode ${data.resume_from}`);
+        }
+    });
+
+    socket.on('training_update', (data) => {
+        updateMetrics(data.metrics, data.episode);
+        updateProgress(data.episode);
+
+        // Update chart data
+        chartData.episodes.push(data.episode);
+        chartData.solve_rates.push(data.metrics.solve_rate);
+        chartData.detection_rates.push(data.metrics.detection_rate);
+        chartData.arch_rewards.push(data.metrics.architect_reward);
+        chartData.solver_rewards.push(data.metrics.solver_reward);
+        renderChart();
+    });
+
+    socket.on('training_complete', (data) => {
+        setStatus('Training Complete', 'complete');
+        progressContainer.style.display = 'none';
+        setButtonsDisabled(false);
+
+        if (data.global_episode) {
+            globalEpisodeEl.textContent = data.global_episode;
+        }
+        if (data.game_log) {
+            // Merge latest entries
+            gameLog = gameLog.concat(data.game_log.filter(e =>
+                !gameLog.some(existing => existing.episode === e.episode)
+            ));
+            renderGameLog();
+        }
+    });
+
+    socket.on('env_state', (data) => {
+        gridData = data;
+        renderGrid(data);
+        if (data.tick !== undefined) {
+            tickCounter.textContent = `Tick: ${data.tick}`;
+        }
+    });
+
+    socket.on('demo_started', () => {
+        setStatus('Demo Running...', 'training');
+        canvasOverlay.style.display = 'none';
+    });
+
+    socket.on('demo_frame', (data) => {
+        renderGrid(data.frame);
+        tickCounter.textContent = `Step: ${data.step + 1}/${data.total}`;
+    });
+
+    socket.on('demo_complete', (data) => {
+        setStatus(`Demo: ${data.outcome}`, 'complete');
+        setButtonsDisabled(false);
+    });
+
+    socket.on('interactive_started', (data) => {
+        setStatus(`Interactive: ${data.num_episodes} ep (budget=${data.budget})`, 'training');
+        canvasOverlay.style.display = 'none';
+        setButtonsDisabled(true);
+    });
+
+    socket.on('interactive_complete', (data) => {
+        setStatus('Interactive Complete', 'complete');
+        setButtonsDisabled(false);
+        if (data.global_episode) {
+            globalEpisodeEl.textContent = data.global_episode;
+        }
+    });
+
+    socket.on('game_log_entry', (entry) => {
+        // Add single entry
+        if (!gameLog.some(e => e.episode === entry.episode)) {
+            gameLog.push(entry);
+            renderGameLog();
+        }
+    });
+
+    socket.on('game_log_update', (data) => {
+        if (data.log && data.log.length > 0) {
+            gameLog = data.log;
+            renderGameLog();
+        }
+        if (data.global_episode) {
+            globalEpisodeEl.textContent = data.global_episode;
+        }
+    });
+
+    socket.on('error', (data) => {
+        setStatus(`Error: ${data.message}`, 'error');
+        setButtonsDisabled(false);
+    });
+}
+
+// ==================================================================
+// UI Events
+// ==================================================================
+
+function setupUIEvents() {
+    // Training button
+    document.getElementById('btnTrain').addEventListener('click', () => {
+        const episodes = parseInt(document.getElementById('inputEpisodes').value) || 500;
+        const solverAttempts = parseInt(document.getElementById('inputSolverAttempts').value) || 20;
+
+        socket.emit('start_training', {
+            episodes: episodes,
+            solver_attempts: solverAttempts,
+            resume: true,
+        });
+    });
+
+    // Demo button
+    document.getElementById('btnDemo').addEventListener('click', () => {
+        setButtonsDisabled(true);
+        socket.emit('run_demo');
+    });
+
+    // Interactive button
+    document.getElementById('btnInteractive').addEventListener('click', () => {
+        const params = {
+            num_episodes: parseInt(document.getElementById('intEpisodes').value) || 1,
+            budget: parseInt(document.getElementById('intBudget').value) || 15,
+            freeze_architect: document.getElementById('intFreezeArchitect').checked,
+            freeze_solver: document.getElementById('intFreezeSolver').checked,
+            temperature: parseFloat(tempSlider.value) || 1.0,
+            solver_attempts: parseInt(document.getElementById('intSolverAttempts').value) || 20,
+            allow_cameras: document.getElementById('intAllowCameras').checked,
+            allow_guards: document.getElementById('intAllowGuards').checked,
+        };
+
+        socket.emit('run_interactive', params);
+    });
+
+    // Toggle vision
+    document.getElementById('toggleVisibility').addEventListener('click', () => {
+        showVision = !showVision;
+        if (gridData) renderGrid(gridData);
+    });
+
+    // Temperature slider
+    tempSlider.addEventListener('input', () => {
+        tempValue.textContent = parseFloat(tempSlider.value).toFixed(1);
+    });
+
+    // Chart tabs
+    document.querySelectorAll('.chart-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeChart = tab.dataset.chart;
+            renderChart();
+        });
+    });
+}
+
+// ==================================================================
+// Grid Rendering
+// ==================================================================
+
+function drawEmptyGrid() {
+    const size = gridCanvas.width;
+    gridCtx.fillStyle = '#0f1225';
+    gridCtx.fillRect(0, 0, size, size);
+
+    const cells = 20;
+    const cellSize = size / cells;
+
+    gridCtx.strokeStyle = CONFIG.GRID_LINE;
+    gridCtx.lineWidth = 0.5;
+
+    for (let i = 0; i <= cells; i++) {
+        gridCtx.beginPath();
+        gridCtx.moveTo(i * cellSize, 0);
+        gridCtx.lineTo(i * cellSize, size);
+        gridCtx.stroke();
+
+        gridCtx.beginPath();
+        gridCtx.moveTo(0, i * cellSize);
+        gridCtx.lineTo(size, i * cellSize);
+        gridCtx.stroke();
+    }
+}
+
+function renderGrid(data) {
+    if (!data || !data.grid) return;
+
+    const grid = data.grid;
     const rows = grid.length;
     const cols = grid[0].length;
-    const tileW = gridCanvas.width / cols;
-    const tileH = gridCanvas.height / rows;
+    const cellW = gridCanvas.width / cols;
+    const cellH = gridCanvas.height / rows;
 
-    // Clear with bright bg
-    gridCtx.fillStyle = CONFIG.CANVAS_BG;
+    // Clear
+    gridCtx.fillStyle = '#0f1225';
     gridCtx.fillRect(0, 0, gridCanvas.width, gridCanvas.height);
 
     // Draw tiles
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            const tile = grid[r][c];
-            if (tile !== 0) {
-                gridCtx.fillStyle = CONFIG.TILE_COLORS[tile] || '#aaa';
-                gridCtx.fillRect(c * tileW, r * tileH, tileW, tileH);
+            const val = grid[r][c];
+            const x = c * cellW;
+            const y = r * cellH;
 
-                // Add highlight for walls (slight 3D effect)
-                if (tile === 1) {
-                    gridCtx.fillStyle = 'rgba(255,255,255,0.12)';
-                    gridCtx.fillRect(c * tileW, r * tileH, tileW, 1.5);
-                    gridCtx.fillRect(c * tileW, r * tileH, 1.5, tileH);
-                    gridCtx.fillStyle = 'rgba(0,0,0,0.06)';
-                    gridCtx.fillRect(c * tileW, r * tileH + tileH - 1.5, tileW, 1.5);
-                    gridCtx.fillRect(c * tileW + tileW - 1.5, r * tileH, 1.5, tileH);
-                }
+            gridCtx.fillStyle = CONFIG.TILE_COLORS[val] || '#e8ecf4';
+            gridCtx.fillRect(x, y, cellW, cellH);
+
+            // Wall 3D effect
+            if (val === 1) {
+                gridCtx.fillStyle = WALL_TOP;
+                gridCtx.fillRect(x, y, cellW, cellH * 0.3);
+                gridCtx.fillStyle = WALL_SHADOW;
+                gridCtx.fillRect(x, y + cellH * 0.85, cellW, cellH * 0.15);
+            }
+
+            // Camera indicator
+            if (val === 4) {
+                gridCtx.fillStyle = 'rgba(139, 92, 246, 0.35)';
+                gridCtx.beginPath();
+                gridCtx.arc(x + cellW / 2, y + cellH / 2, cellW * 0.25, 0, Math.PI * 2);
+                gridCtx.fill();
             }
         }
     }
 
-    // Draw visibility map
-    if (state.showVisibility && envState.visibility) {
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                if (envState.visibility[r][c] > 0.5) {
-                    gridCtx.fillStyle = CONFIG.VISION_COLOR;
-                    gridCtx.fillRect(c * tileW, r * tileH, tileW, tileH);
-
-                    gridCtx.strokeStyle = CONFIG.VISION_BORDER;
-                    gridCtx.lineWidth = 0.5;
-                    gridCtx.strokeRect(c * tileW, r * tileH, tileW, tileH);
-                }
-            }
-        }
-    }
-
-    // Draw camera vision cones
-    if (envState.cameras) {
-        envState.cameras.forEach(cam => {
-            drawCameraCone(cam, tileW, tileH);
+    // Draw vision cones
+    if (showVision && data.vision_zones) {
+        gridCtx.fillStyle = CONFIG.VISION_CONE;
+        data.vision_zones.forEach(([r, c]) => {
+            gridCtx.fillRect(c * cellW, r * cellH, cellW, cellH);
         });
     }
 
-    // Draw guard patrol paths
-    if (envState.guards) {
-        envState.guards.forEach(guard => {
-            drawGuardPatrol(guard, tileW, tileH);
-        });
-    }
-
-    // Draw solver trail
-    if (envState.solver_path && envState.solver_path.length > 1) {
-        gridCtx.strokeStyle = CONFIG.SOLVER_TRAIL_COLOR;
+    // Draw solver path (the trail from start to current position)
+    if (data.solver_path && data.solver_path.length > 1) {
+        // Draw connecting line
+        gridCtx.strokeStyle = '#22d3ee';
         gridCtx.lineWidth = 2.5;
         gridCtx.lineJoin = 'round';
         gridCtx.lineCap = 'round';
+        gridCtx.setLineDash([]);
         gridCtx.beginPath();
-        envState.solver_path.forEach((pos, i) => {
-            const x = pos[1] * tileW + tileW / 2;
-            const y = pos[0] * tileH + tileH / 2;
-            if (i === 0) gridCtx.moveTo(x, y);
-            else gridCtx.lineTo(x, y);
-        });
+        const [startR, startC] = data.solver_path[0];
+        gridCtx.moveTo(startC * cellW + cellW / 2, startR * cellH + cellH / 2);
+        for (let i = 1; i < data.solver_path.length; i++) {
+            const [pr, pc] = data.solver_path[i];
+            gridCtx.lineTo(pc * cellW + cellW / 2, pr * cellH + cellH / 2);
+        }
         gridCtx.stroke();
+
+        // Draw dots at each step
+        data.solver_path.forEach(([r, c], idx) => {
+            const alpha = 0.3 + (idx / data.solver_path.length) * 0.7;
+            gridCtx.fillStyle = `rgba(34, 211, 238, ${alpha})`;
+            gridCtx.beginPath();
+            gridCtx.arc(c * cellW + cellW / 2, r * cellH + cellH / 2, cellW * 0.15, 0, Math.PI * 2);
+            gridCtx.fill();
+        });
     }
 
-    // Draw solver position
-    if (envState.solver_pos) {
-        const [sr, sc] = envState.solver_pos;
-        const cx = sc * tileW + tileW / 2;
-        const cy = sr * tileH + tileH / 2;
-        const radius = Math.min(tileW, tileH) * 0.35;
+    // Draw solver
+    if (data.solver_pos) {
+        const [sr, sc] = data.solver_pos;
+        const sx = sc * cellW;
+        const sy = sr * cellH;
 
         // Glow
-        const glow = gridCtx.createRadialGradient(cx, cy, 0, cx, cy, radius * 2.5);
-        glow.addColorStop(0, CONFIG.SOLVER_GLOW_INNER);
-        glow.addColorStop(1, CONFIG.SOLVER_GLOW_OUTER);
-        gridCtx.fillStyle = glow;
+        gridCtx.fillStyle = CONFIG.SOLVER_GLOW;
         gridCtx.beginPath();
-        gridCtx.arc(cx, cy, radius * 2.5, 0, Math.PI * 2);
+        gridCtx.arc(sx + cellW / 2, sy + cellH / 2, cellW * 0.7, 0, Math.PI * 2);
         gridCtx.fill();
 
-        // Solver dot
+        // Solver
         gridCtx.fillStyle = CONFIG.SOLVER_COLOR;
         gridCtx.beginPath();
-        gridCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+        gridCtx.arc(sx + cellW / 2, sy + cellH / 2, cellW * 0.35, 0, Math.PI * 2);
         gridCtx.fill();
 
         // Border
-        gridCtx.strokeStyle = 'rgba(0,0,0,0.15)';
+        gridCtx.strokeStyle = 'rgba(161, 98, 7, 0.5)';
         gridCtx.lineWidth = 1.5;
         gridCtx.stroke();
-
-        // Inner shine
-        gridCtx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-        gridCtx.beginPath();
-        gridCtx.arc(cx - radius * 0.2, cy - radius * 0.25, radius * 0.35, 0, Math.PI * 2);
-        gridCtx.fill();
-    }
-
-    // Draw start/vault labels
-    if (envState.start_pos) {
-        drawLabel('S', envState.start_pos, tileW, tileH, '#fff');
-    }
-    if (envState.vault_pos) {
-        drawLabel('V', envState.vault_pos, tileW, tileH, '#fff');
     }
 
     // Grid lines
-    gridCtx.strokeStyle = CONFIG.GRID_LINE_COLOR;
+    gridCtx.strokeStyle = CONFIG.GRID_LINE;
     gridCtx.lineWidth = 0.5;
     for (let r = 0; r <= rows; r++) {
         gridCtx.beginPath();
-        gridCtx.moveTo(0, r * tileH);
-        gridCtx.lineTo(gridCanvas.width, r * tileH);
+        gridCtx.moveTo(0, r * cellH);
+        gridCtx.lineTo(gridCanvas.width, r * cellH);
         gridCtx.stroke();
     }
     for (let c = 0; c <= cols; c++) {
         gridCtx.beginPath();
-        gridCtx.moveTo(c * tileW, 0);
-        gridCtx.lineTo(c * tileW, gridCanvas.height);
+        gridCtx.moveTo(c * cellW, 0);
+        gridCtx.lineTo(c * cellW, gridCanvas.height);
         gridCtx.stroke();
     }
-
-    // Detection events — red X marks
-    if (envState.detection_events) {
-        envState.detection_events.forEach(evt => {
-            const [dr, dc] = evt.position;
-            const x = dc * tileW + tileW / 2;
-            const y = dr * tileH + tileH / 2;
-
-            gridCtx.strokeStyle = CONFIG.DETECTION_X;
-            gridCtx.lineWidth = 2.5;
-            gridCtx.lineCap = 'round';
-            const s = tileW * 0.35;
-            gridCtx.beginPath();
-            gridCtx.moveTo(x - s, y - s);
-            gridCtx.lineTo(x + s, y + s);
-            gridCtx.moveTo(x + s, y - s);
-            gridCtx.lineTo(x - s, y + s);
-            gridCtx.stroke();
-        });
-    }
 }
 
-function drawCameraCone(cam, tileW, tileH) {
-    const cx = cam.col * tileW + tileW / 2;
-    const cy = cam.row * tileH + tileH / 2;
-    const range = (cam.vision_range || 6) * tileW;
-    const heading = -cam.heading * Math.PI / 180;
-    const halfFov = (cam.fov_angle || 60) * Math.PI / 360;
-
-    // Cone fill
-    gridCtx.fillStyle = CONFIG.CAMERA_CONE_COLOR;
-    gridCtx.beginPath();
-    gridCtx.moveTo(cx, cy);
-    gridCtx.arc(cx, cy, range, heading - halfFov, heading + halfFov);
-    gridCtx.closePath();
-    gridCtx.fill();
-
-    // Camera body
-    gridCtx.fillStyle = CONFIG.CAMERA_BODY;
-    gridCtx.beginPath();
-    gridCtx.arc(cx, cy, tileW * 0.28, 0, Math.PI * 2);
-    gridCtx.fill();
-    gridCtx.strokeStyle = 'rgba(0,0,0,0.12)';
-    gridCtx.lineWidth = 1;
-    gridCtx.stroke();
-
-    // Direction indicator
-    gridCtx.strokeStyle = CONFIG.CAMERA_DIR;
-    gridCtx.lineWidth = 2;
-    gridCtx.lineCap = 'round';
-    gridCtx.beginPath();
-    gridCtx.moveTo(cx, cy);
-    gridCtx.lineTo(cx + Math.cos(heading) * tileW * 0.5,
-        cy + Math.sin(heading) * tileH * 0.5);
-    gridCtx.stroke();
-}
-
-function drawGuardPatrol(guard, tileW, tileH) {
-    if (!guard.patrol_path || guard.patrol_path.length < 2) return;
-
-    // Draw patrol path
-    gridCtx.strokeStyle = CONFIG.GUARD_PATROL_COLOR;
-    gridCtx.lineWidth = 1.5;
-    gridCtx.setLineDash([5, 5]);
-    gridCtx.lineCap = 'round';
-    gridCtx.beginPath();
-    guard.patrol_path.forEach((pos, i) => {
-        const x = pos[1] * tileW + tileW / 2;
-        const y = pos[0] * tileH + tileH / 2;
-        if (i === 0) gridCtx.moveTo(x, y);
-        else gridCtx.lineTo(x, y);
-    });
-    const first = guard.patrol_path[0];
-    gridCtx.lineTo(first[1] * tileW + tileW / 2, first[0] * tileH + tileH / 2);
-    gridCtx.stroke();
-    gridCtx.setLineDash([]);
-
-    // Guard body
-    const gx = guard.col * tileW + tileW / 2;
-    const gy = guard.row * tileH + tileH / 2;
-
-    gridCtx.fillStyle = CONFIG.GUARD_BODY;
-    gridCtx.beginPath();
-    gridCtx.arc(gx, gy, tileW * 0.32, 0, Math.PI * 2);
-    gridCtx.fill();
-    gridCtx.strokeStyle = 'rgba(0,0,0,0.12)';
-    gridCtx.lineWidth = 1;
-    gridCtx.stroke();
-
-    // Direction
-    const heading = -guard.heading * Math.PI / 180;
-    gridCtx.strokeStyle = CONFIG.GUARD_DIR;
-    gridCtx.lineWidth = 2;
-    gridCtx.lineCap = 'round';
-    gridCtx.beginPath();
-    gridCtx.moveTo(gx, gy);
-    gridCtx.lineTo(gx + Math.cos(heading) * tileW * 0.5,
-        gy + Math.sin(heading) * tileH * 0.5);
-    gridCtx.stroke();
-}
-
-function drawLabel(text, pos, tileW, tileH, color) {
-    const x = pos[1] * tileW + tileW / 2;
-    const y = pos[0] * tileH + tileH / 2;
-    gridCtx.font = `bold ${Math.max(10, tileW * 0.45)}px 'Outfit', sans-serif`;
-    gridCtx.textAlign = 'center';
-    gridCtx.textBaseline = 'middle';
-    // Text shadow for readability on bright tiles
-    gridCtx.fillStyle = 'rgba(0,0,0,0.25)';
-    gridCtx.fillText(text, x + 1, y + 1);
-    gridCtx.fillStyle = color;
-    gridCtx.fillText(text, x, y);
-}
-
-// ============================================================
-// Chart Renderer (Bright theme)
-// ============================================================
+// ==================================================================
+// Chart Rendering
+// ==================================================================
 
 function renderChart() {
-    const ctx = chartCtx;
-    const w = chartCanvas.width;
-    const h = chartCanvas.height;
+    const W = chartCanvas.width;
+    const H = chartCanvas.height;
+    const pad = { top: 15, right: 10, bottom: 25, left: 45 };
 
-    // Clear
-    ctx.fillStyle = CONFIG.CHART_BG;
-    ctx.fillRect(0, 0, w, h);
+    chartCtx.fillStyle = CONFIG.CHART.BG;
+    chartCtx.fillRect(0, 0, W, H);
 
-    const padding = { top: 22, right: 15, bottom: 25, left: 48 };
-    const chartW = w - padding.left - padding.right;
-    const chartH = h - padding.top - padding.bottom;
+    let series1, series2, color1, color2, label1, label2;
 
-    let datasets;
-    if (state.activeChart === 'rewards') {
-        datasets = [
-            { data: state.metrics.architect_reward || [], color: '#8b5cf6', label: 'Architect' },
-            { data: state.metrics.solver_reward || [], color: '#10b981', label: 'Solver' },
-        ];
+    if (activeChart === 'rewards') {
+        series1 = chartData.arch_rewards;
+        series2 = chartData.solver_rewards;
+        color1 = CONFIG.CHART.ARCH_REWARD;
+        color2 = CONFIG.CHART.SOLVER_REWARD;
+        label1 = 'Architect';
+        label2 = 'Solver';
     } else {
-        datasets = [
-            { data: state.metrics.solve_rate || [], color: '#10b981', label: 'Solve Rate' },
-            { data: state.metrics.detection_rate || [], color: '#f43f5e', label: 'Detect Rate' },
-        ];
+        series1 = chartData.solve_rates;
+        series2 = chartData.detection_rates;
+        color1 = CONFIG.CHART.SOLVE;
+        color2 = CONFIG.CHART.DETECT;
+        label1 = 'Solve Rate';
+        label2 = 'Detect Rate';
     }
 
-    // Find Y range
-    let yMin = Infinity, yMax = -Infinity;
-    datasets.forEach(ds => {
-        ds.data.forEach(v => {
-            if (v < yMin) yMin = v;
-            if (v > yMax) yMax = v;
-        });
-    });
-    if (yMin === Infinity) { yMin = 0; yMax = 1; }
-    const yRange = yMax - yMin || 1;
-    yMin -= yRange * 0.1;
-    yMax += yRange * 0.1;
+    if (series1.length === 0) {
+        chartCtx.fillStyle = CONFIG.CHART.LABEL;
+        chartCtx.font = '12px Outfit';
+        chartCtx.textAlign = 'center';
+        chartCtx.fillText('No data yet', W / 2, H / 2);
+        return;
+    }
 
-    const maxLen = Math.max(...datasets.map(d => d.data.length), 1);
+    const allVals = [...series1, ...series2];
+    const minVal = Math.min(0, ...allVals);
+    const maxVal = Math.max(1, ...allVals) * 1.05;
+    const range = maxVal - minVal || 1;
+
+    const plotW = W - pad.left - pad.right;
+    const plotH = H - pad.top - pad.bottom;
 
     // Grid lines
-    ctx.strokeStyle = CONFIG.CHART_GRID;
-    ctx.lineWidth = 0.5;
+    chartCtx.strokeStyle = CONFIG.CHART.GRID;
+    chartCtx.lineWidth = 0.5;
     for (let i = 0; i <= 4; i++) {
-        const y = padding.top + (chartH * i / 4);
-        ctx.beginPath();
-        ctx.moveTo(padding.left, y);
-        ctx.lineTo(w - padding.right, y);
-        ctx.stroke();
+        const y = pad.top + (plotH / 4) * i;
+        chartCtx.beginPath();
+        chartCtx.moveTo(pad.left, y);
+        chartCtx.lineTo(W - pad.right, y);
+        chartCtx.stroke();
 
-        // Y labels
-        const val = yMax - (yMax - yMin) * i / 4;
-        ctx.fillStyle = CONFIG.CHART_LABEL;
-        ctx.font = '10px JetBrains Mono';
-        ctx.textAlign = 'right';
-        ctx.fillText(val.toFixed(1), padding.left - 6, y + 4);
+        const val = maxVal - (range / 4) * i;
+        chartCtx.fillStyle = CONFIG.CHART.LABEL;
+        chartCtx.font = '10px JetBrains Mono';
+        chartCtx.textAlign = 'right';
+        chartCtx.fillText(val.toFixed(1), pad.left - 5, y + 3);
     }
 
-    // Draw datasets
-    datasets.forEach(ds => {
-        if (ds.data.length < 2) return;
+    function drawLine(series, color) {
+        if (series.length < 2) return;
 
-        const smoothed = smoothData(ds.data, 5);
+        // Gradient fill
+        const grad = chartCtx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
+        grad.addColorStop(0, color + '18');
+        grad.addColorStop(1, color + '02');
+
+        chartCtx.beginPath();
+        chartCtx.moveTo(pad.left, pad.top + plotH);
+
+        for (let i = 0; i < series.length; i++) {
+            const x = pad.left + (i / Math.max(series.length - 1, 1)) * plotW;
+            const y = pad.top + plotH - ((series[i] - minVal) / range) * plotH;
+            chartCtx.lineTo(x, y);
+        }
+
+        chartCtx.lineTo(pad.left + plotW, pad.top + plotH);
+        chartCtx.closePath();
+        chartCtx.fillStyle = grad;
+        chartCtx.fill();
 
         // Line
-        ctx.strokeStyle = ds.color;
-        ctx.lineWidth = 2.5;
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        smoothed.forEach((v, i) => {
-            const x = padding.left + (i / (maxLen - 1)) * chartW;
-            const y = padding.top + (1 - (v - yMin) / (yMax - yMin)) * chartH;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        });
-        ctx.stroke();
+        chartCtx.beginPath();
+        chartCtx.strokeStyle = color;
+        chartCtx.lineWidth = 2;
 
-        // Area fill — very subtle
-        const areaGrad = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
-        areaGrad.addColorStop(0, ds.color + '18');  // 10% opacity at top
-        areaGrad.addColorStop(1, ds.color + '02');  // ~1% at bottom
-        ctx.fillStyle = areaGrad;
-        ctx.beginPath();
-        smoothed.forEach((v, i) => {
-            const x = padding.left + (i / (maxLen - 1)) * chartW;
-            const y = padding.top + (1 - (v - yMin) / (yMax - yMin)) * chartH;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        });
-        ctx.lineTo(padding.left + chartW, padding.top + chartH);
-        ctx.lineTo(padding.left, padding.top + chartH);
-        ctx.closePath();
-        ctx.fill();
-    });
+        for (let i = 0; i < series.length; i++) {
+            const x = pad.left + (i / Math.max(series.length - 1, 1)) * plotW;
+            const y = pad.top + plotH - ((series[i] - minVal) / range) * plotH;
+            i === 0 ? chartCtx.moveTo(x, y) : chartCtx.lineTo(x, y);
+        }
+        chartCtx.stroke();
+    }
+
+    drawLine(series1, color1);
+    drawLine(series2, color2);
 
     // Legend
-    let legendX = padding.left + 10;
-    datasets.forEach(ds => {
-        ctx.fillStyle = ds.color;
-        ctx.beginPath();
-        ctx.roundRect(legendX, padding.top + 3, 14, 4, 2);
-        ctx.fill();
-        ctx.fillStyle = CONFIG.CHART_LEGEND;
-        ctx.font = '11px Outfit';
-        ctx.textAlign = 'left';
-        ctx.fillText(ds.label, legendX + 18, padding.top + 8);
-        legendX += ctx.measureText(ds.label).width + 36;
-    });
+    const legendY = H - 6;
+    chartCtx.font = '10px Outfit';
+    chartCtx.textAlign = 'left';
+
+    chartCtx.fillStyle = color1;
+    chartCtx.fillRect(pad.left, legendY - 5, 12, 3);
+    chartCtx.fillStyle = CONFIG.CHART.LABEL;
+    chartCtx.fillText(label1, pad.left + 16, legendY);
+
+    chartCtx.fillStyle = color2;
+    chartCtx.fillRect(pad.left + 90, legendY - 5, 12, 3);
+    chartCtx.fillStyle = CONFIG.CHART.LABEL;
+    chartCtx.fillText(label2, pad.left + 106, legendY);
 }
 
-function smoothData(data, window) {
-    if (data.length <= window) return data;
-    const result = [];
-    for (let i = 0; i < data.length; i++) {
-        let sum = 0;
-        let count = 0;
-        for (let j = Math.max(0, i - window); j <= i; j++) {
-            sum += data[j];
-            count++;
+// ==================================================================
+// Game Log Rendering
+// ==================================================================
+
+function renderGameLog() {
+    const tbody = document.getElementById('gameLogBody');
+    const logCount = document.getElementById('logCount');
+
+    logCount.textContent = `${gameLog.length} episodes`;
+
+    if (gameLog.length === 0) {
+        tbody.innerHTML = '<tr class="log-empty"><td colspan="10">No episodes yet — start training or run interactive episodes</td></tr>';
+        return;
+    }
+
+    // Show last 100 entries (most recent first)
+    const entries = gameLog.slice(-100).reverse();
+
+    tbody.innerHTML = entries.map(e => {
+        const solveClass = e.solve_rate >= 0.5 ? 'val-good' : (e.solve_rate > 0 ? 'val-neutral' : 'val-bad');
+        const detectClass = e.detection_rate >= 0.5 ? 'val-bad' : (e.detection_rate > 0 ? 'val-neutral' : 'val-good');
+
+        let modeLabel, modeClass;
+        if (e.is_interactive) {
+            if (e.freeze_architect || e.freeze_solver) {
+                modeLabel = e.freeze_architect ? '❄️A' : '❄️S';
+                modeClass = 'frozen';
+            } else {
+                modeLabel = '🎮';
+                modeClass = 'interactive';
+            }
+        } else {
+            modeLabel = 'Auto';
+            modeClass = 'auto';
         }
-        result.push(sum / count);
-    }
-    return result;
+
+        const layoutStr = `${e.walls}W ${e.cameras}C ${e.guards}G`;
+
+        return `<tr>
+            <td>${e.episode}</td>
+            <td>${e.phase || '—'}</td>
+            <td>${e.budget}</td>
+            <td>${layoutStr}</td>
+            <td class="${solveClass}">${(e.solve_rate * 100).toFixed(0)}%</td>
+            <td class="${detectClass}">${(e.detection_rate * 100).toFixed(0)}%</td>
+            <td>${e.architect_reward >= 0 ? '+' : ''}${e.architect_reward.toFixed(2)}</td>
+            <td>${e.solver_reward >= 0 ? '+' : ''}${e.solver_reward.toFixed(2)}</td>
+            <td>${e.avg_steps.toFixed(0)}</td>
+            <td><span class="log-mode ${modeClass}">${modeLabel}</span></td>
+        </tr>`;
+    }).join('');
+
+    // Auto-scroll to top (newest)
+    document.getElementById('gameLogContainer').scrollTop = 0;
 }
 
-// ============================================================
-// UI Updates
-// ============================================================
+// ==================================================================
+// UI Helpers
+// ==================================================================
 
-function updateMetrics(metrics) {
-    if (!metrics) return;
+function setStatus(text, state) {
+    const dot = statusIndicator.querySelector('.status-dot');
+    const textEl = statusIndicator.querySelector('.status-text');
+    textEl.textContent = text;
 
-    setText('metricEpisode', metrics.episode || '—');
-    setText('metricSolveRate', ((metrics.solve_rate || 0) * 100).toFixed(0) + '%');
-    setText('metricDetectionRate', ((metrics.detection_rate || 0) * 100).toFixed(0) + '%');
-    setText('metricArchReward', (metrics.architect_reward || 0).toFixed(2));
-    setText('metricSolverReward', (metrics.solver_reward || 0).toFixed(2));
-    setText('metricAvgSteps', Math.round(metrics.avg_steps || 0));
-    setText('metricBudget', metrics.budget || '—');
+    statusIndicator.className = `status-indicator ${state}`;
 }
 
-function updateLayoutStats(envState) {
-    if (!envState) return;
-
-    const cameras = envState.cameras ? envState.cameras.length : 0;
-    const guards = envState.guards ? envState.guards.length : 0;
-
-    let walls = 0;
-    if (envState.grid) {
-        envState.grid.forEach(row => row.forEach(t => { if (t === 1) walls++; }));
-        const borderWalls = 2 * envState.grid.length + 2 * (envState.grid[0].length - 2);
-        walls = Math.max(0, walls - borderWalls);
-    }
-
-    setText('statWalls', walls);
-    setText('statCameras', cameras);
-    setText('statGuards', guards);
-    setText('statValid', '✓');
+function updateMetrics(metrics, episode) {
+    document.getElementById('metricEpisode').textContent = episode;
+    document.getElementById('metricSolveRate').textContent = (metrics.solve_rate * 100).toFixed(0) + '%';
+    document.getElementById('metricDetectionRate').textContent = (metrics.detection_rate * 100).toFixed(0) + '%';
+    document.getElementById('metricArchReward').textContent = metrics.architect_reward.toFixed(2);
+    document.getElementById('metricSolverReward').textContent = metrics.solver_reward.toFixed(2);
+    document.getElementById('metricAvgSteps').textContent = metrics.avg_steps.toFixed(0);
+    document.getElementById('metricBudget').textContent = metrics.budget;
+    globalEpisodeEl.textContent = episode;
 }
 
-function setText(id, val) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = val;
+function updateProgress(episode) {
+    const pct = Math.min(100, (episode / totalTrainingEpisodes) * 100);
+    progressFill.style.width = pct + '%';
+    progressText.textContent = `${pct.toFixed(0)}% (${episode}/${totalTrainingEpisodes})`;
 }
 
-function setStatus(text, active = false) {
-    const indicator = document.getElementById('statusIndicator');
-    const statusText = indicator.querySelector('.status-text');
-    statusText.textContent = text;
-    indicator.classList.toggle('active', active);
+function setButtonsDisabled(disabled) {
+    document.getElementById('btnTrain').disabled = disabled;
+    document.getElementById('btnDemo').disabled = disabled;
+    document.getElementById('btnInteractive').disabled = disabled;
 }
 
-function showOverlay(show) {
-    const overlay = document.getElementById('canvasOverlay');
-    overlay.classList.toggle('hidden', !show);
-}
+// ==================================================================
+// Bootstrap
+// ==================================================================
 
-// ============================================================
-// WebSocket Connection
-// ============================================================
-
-let socket;
-
-function initSocket() {
-    socket = io();
-
-    socket.on('connect', () => {
-        console.log('[WS] Connected');
-        setStatus('Connected');
-    });
-
-    socket.on('disconnect', () => {
-        console.log('[WS] Disconnected');
-        setStatus('Disconnected');
-    });
-
-    socket.on('env_state', (data) => {
-        state.envState = data;
-        showOverlay(false);
-        renderGrid(data);
-        updateLayoutStats(data);
-        setText('tickCounter', `Tick: ${data.tick || 0}`);
-    });
-
-    socket.on('training_update', (data) => {
-        const { episode, metrics } = data;
-
-        Object.keys(metrics).forEach(key => {
-            if (!state.metrics[key]) state.metrics[key] = [];
-            state.metrics[key].push(metrics[key]);
-        });
-
-        updateMetrics({ ...metrics, episode });
-        renderChart();
-
-        const pct = (episode / state.totalEpisodes * 100).toFixed(0);
-        document.getElementById('progressFill').style.width = pct + '%';
-        document.getElementById('progressText').textContent = pct + '%';
-    });
-
-    socket.on('training_started', (data) => {
-        state.isTraining = true;
-        state.totalEpisodes = data.episodes;
-        setStatus('Training', true);
-        document.getElementById('btnTrain').disabled = true;
-        document.getElementById('progressContainer').style.display = 'flex';
-    });
-
-    socket.on('training_complete', () => {
-        state.isTraining = false;
-        setStatus('Training Complete');
-        document.getElementById('btnTrain').disabled = false;
-    });
-
-    socket.on('demo_frame', (data) => {
-        state.envState = data.frame;
-        showOverlay(false);
-        renderGrid(data.frame);
-        updateLayoutStats(data.frame);
-        setText('tickCounter', `Step: ${data.step}/${data.total}`);
-    });
-
-    socket.on('demo_complete', (data) => {
-        setStatus(`Demo: ${data.outcome}`);
-    });
-
-    socket.on('error', (data) => {
-        console.error('[Server Error]', data.message);
-        setStatus('Error: ' + data.message);
-    });
-}
-
-// ============================================================
-// Event Listeners
-// ============================================================
-
-document.getElementById('btnTrain').addEventListener('click', () => {
-    const episodes = parseInt(document.getElementById('inputEpisodes').value) || 500;
-    const solverAttempts = parseInt(document.getElementById('inputSolverAttempts').value) || 20;
-
-    state.metrics = {
-        episode: [], solve_rate: [], detection_rate: [],
-        architect_reward: [], solver_reward: []
-    };
-    state.totalEpisodes = episodes;
-
-    socket.emit('start_training', { episodes, solver_attempts: solverAttempts });
-});
-
-document.getElementById('btnDemo').addEventListener('click', () => {
-    setStatus('Running Demo...', true);
-    socket.emit('run_demo', {});
-});
-
-document.getElementById('toggleVisibility').addEventListener('click', () => {
-    state.showVisibility = !state.showVisibility;
-    if (state.envState) renderGrid(state.envState);
-});
-
-// Chart tab switching
-document.querySelectorAll('.chart-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        state.activeChart = tab.dataset.chart;
-        renderChart();
-    });
-});
-
-// ============================================================
-// Initialization
-// ============================================================
-
-function init() {
-    showOverlay(true);
-    renderChart();
-    initSocket();
-
-    function animate() {
-        state.animFrame++;
-        requestAnimationFrame(animate);
-    }
-    animate();
-}
-
-init();
+document.addEventListener('DOMContentLoaded', init);

@@ -1,6 +1,12 @@
 """
 Visualization Server — Flask + WebSocket for live training visualization.
 Streams environment state to the browser dashboard.
+
+Features:
+- Live training updates via WebSocket
+- Interactive episode mode (custom budget, freeze agents, etc.)
+- Game log API (persistent episode history)
+- Demo playback
 """
 
 import os
@@ -18,12 +24,13 @@ def create_app(save_dir="checkpoints", grid_size=20):
     """Create the Flask app with SocketIO."""
     
     viz_dir = os.path.dirname(os.path.abspath(__file__))
+    project_dir = os.path.dirname(viz_dir)
     
     app = Flask(__name__, static_folder=viz_dir)
     app.config['SECRET_KEY'] = 'heist-architect-viz'
     socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
     
-    # Shared state
+    # Shared state — trainer persists across training + interactive sessions
     state = {
         "trainer": None,
         "training_thread": None,
@@ -31,6 +38,37 @@ def create_app(save_dir="checkpoints", grid_size=20):
         "latest_metrics": None,
         "is_training": False,
     }
+    
+    def _get_or_create_trainer(episodes=500, solver_attempts=20):
+        """Get existing trainer or create a new one."""
+        if state["trainer"] is not None:
+            return state["trainer"]
+        
+        from heist_architect.environment import EnvironmentConfig
+        from heist_architect.training import AdversarialTrainer
+        
+        config = EnvironmentConfig(
+            grid_rows=grid_size,
+            grid_cols=grid_size,
+            start_pos=(1, 1),
+            vault_pos=(grid_size - 2, grid_size - 2),
+        )
+        
+        trainer = AdversarialTrainer(
+            config=config,
+            total_episodes=episodes,
+            solver_episodes_per_layout=solver_attempts,
+            save_dir=save_dir,
+            log_dir=os.path.join(project_dir, "logs"),
+        )
+        
+        # Auto-resume if checkpoints exist
+        latest = trainer.find_latest_checkpoint()
+        if latest:
+            trainer.resume_from_checkpoint()
+        
+        state["trainer"] = trainer
+        return trainer
     
     # -----------------------------------------------------------------------
     # Routes
@@ -49,19 +87,32 @@ def create_app(save_dir="checkpoints", grid_size=20):
         return send_from_directory(viz_dir, 'app.js')
     
     @app.route('/api/status')
-    def status():
+    def api_status():
         return jsonify({
             "is_training": state["is_training"],
             "has_state": state["latest_env_state"] is not None,
+            "has_trainer": state["trainer"] is not None,
+            "global_episode": state["trainer"].global_episode if state["trainer"] else 0,
         })
     
     @app.route('/api/metrics')
-    def get_metrics():
-        log_path = os.path.join(os.path.dirname(viz_dir), "logs", "training_metrics.json")
+    def api_metrics():
+        log_path = os.path.join(project_dir, "logs", "training_metrics.json")
         if os.path.exists(log_path):
             with open(log_path, 'r') as f:
                 return jsonify(json.load(f))
         return jsonify({})
+    
+    @app.route('/api/game_log')
+    def api_game_log():
+        """Return the full game log."""
+        log_path = os.path.join(project_dir, "logs", "game_log.json")
+        if os.path.exists(log_path):
+            with open(log_path, 'r') as f:
+                return jsonify(json.load(f))
+        if state["trainer"]:
+            return jsonify(state["trainer"].get_game_log())
+        return jsonify([])
     
     # -----------------------------------------------------------------------
     # WebSocket Events  
@@ -72,6 +123,13 @@ def create_app(save_dir="checkpoints", grid_size=20):
         print('[Viz] Client connected')
         if state["latest_env_state"]:
             socketio.emit('env_state', state["latest_env_state"])
+        
+        # Send existing game log
+        if state["trainer"]:
+            socketio.emit('game_log_update', {
+                'log': state["trainer"].get_game_log(),
+                'global_episode': state["trainer"].global_episode,
+            })
     
     @socketio.on('start_training')
     def handle_start_training(data):
@@ -81,22 +139,11 @@ def create_app(save_dir="checkpoints", grid_size=20):
         
         episodes = data.get('episodes', 500)
         solver_attempts = data.get('solver_attempts', 20)
+        resume = data.get('resume', True)  # Auto-resume by default
         
-        from heist_architect.environment import EnvironmentConfig
-        from heist_architect.training import AdversarialTrainer
-        
-        config = EnvironmentConfig(
-            grid_rows=grid_size,
-            grid_cols=grid_size
-        )
-        
-        trainer = AdversarialTrainer(
-            config=config,
-            total_episodes=episodes,
-            solver_episodes_per_layout=solver_attempts,
-            save_dir=save_dir,
-        )
-        state["trainer"] = trainer
+        trainer = _get_or_create_trainer(episodes, solver_attempts)
+        trainer.total_episodes = episodes
+        trainer.solver_episodes = solver_attempts
         state["is_training"] = True
         
         def training_callback(episode, metrics, env_state):
@@ -107,68 +154,134 @@ def create_app(save_dir="checkpoints", grid_size=20):
                 'episode': episode,
                 'metrics': metrics,
             })
+            # Send latest game log entry
+            if trainer.game_log:
+                socketio.emit('game_log_entry', trainer.game_log[-1].to_dict())
         
         def run_training():
             try:
-                trainer.train(callback=training_callback)
+                trainer.train(callback=training_callback, resume=resume)
             finally:
                 state["is_training"] = False
-                socketio.emit('training_complete', {})
+                socketio.emit('training_complete', {
+                    'global_episode': trainer.global_episode,
+                    'game_log': trainer.get_game_log()[-10:],  # Last 10 entries
+                })
         
         thread = threading.Thread(target=run_training, daemon=True)
         thread.start()
         state["training_thread"] = thread
         
-        socketio.emit('training_started', {'episodes': episodes})
+        socketio.emit('training_started', {
+            'episodes': episodes,
+            'resume_from': trainer.global_episode if resume else 0,
+        })
+    
+    @socketio.on('run_interactive')
+    def handle_interactive(data):
+        """Run interactive episodes with custom parameters."""
+        if state["is_training"]:
+            socketio.emit('error', {'message': 'Training in progress — wait until it finishes'})
+            return
+        
+        # Get or create trainer (will auto-resume)
+        trainer = _get_or_create_trainer()
+        
+        num_episodes = data.get('num_episodes', 1)
+        budget = data.get('budget', 15)
+        freeze_architect = data.get('freeze_architect', False)
+        freeze_solver = data.get('freeze_solver', False)
+        temperature = data.get('temperature', 1.0)
+        solver_attempts = data.get('solver_attempts', 20)
+        allow_cameras = data.get('allow_cameras', True)
+        allow_guards = data.get('allow_guards', True)
+        
+        state["is_training"] = True
+        
+        def interactive_callback(episode, metrics, env_state):
+            state["latest_env_state"] = env_state
+            socketio.emit('env_state', env_state)
+            socketio.emit('training_update', {
+                'episode': episode,
+                'metrics': metrics,
+            })
+            if trainer.game_log:
+                socketio.emit('game_log_entry', trainer.game_log[-1].to_dict())
+        
+        def run_interactive():
+            try:
+                socketio.emit('interactive_started', {
+                    'num_episodes': num_episodes,
+                    'budget': budget,
+                    'freeze_architect': freeze_architect,
+                    'freeze_solver': freeze_solver,
+                })
+                
+                results = trainer.run_interactive_episodes(
+                    num_episodes=num_episodes,
+                    budget=budget,
+                    freeze_architect=freeze_architect,
+                    freeze_solver=freeze_solver,
+                    temperature=temperature,
+                    solver_attempts=solver_attempts,
+                    allow_cameras=allow_cameras,
+                    allow_guards=allow_guards,
+                    callback=interactive_callback,
+                )
+                
+                socketio.emit('interactive_complete', {
+                    'num_episodes': num_episodes,
+                    'results': results,
+                    'global_episode': trainer.global_episode,
+                })
+            finally:
+                state["is_training"] = False
+        
+        thread = threading.Thread(target=run_interactive, daemon=True)
+        thread.start()
+    
+    @socketio.on('get_game_log')
+    def handle_get_game_log(data=None):
+        """Send the full game log to the client."""
+        if state["trainer"]:
+            socketio.emit('game_log_update', {
+                'log': state["trainer"].get_game_log(),
+                'global_episode': state["trainer"].global_episode,
+            })
+        else:
+            # Try loading from file
+            log_path = os.path.join(project_dir, "logs", "game_log.json")
+            if os.path.exists(log_path):
+                with open(log_path, 'r') as f:
+                    log_data = json.load(f)
+                socketio.emit('game_log_update', {
+                    'log': log_data,
+                    'global_episode': len(log_data),
+                })
+            else:
+                socketio.emit('game_log_update', {'log': [], 'global_episode': 0})
     
     @socketio.on('run_demo')
     def handle_demo(data=None):
-        from heist_architect.environment import HeistEnvironment, EnvironmentConfig
-        from heist_architect.agents.architect import ArchitectAgent
-        from heist_architect.agents.solver import SolverAgent
+        trainer = _get_or_create_trainer()
         
-        config = EnvironmentConfig(grid_rows=grid_size, grid_cols=grid_size)
-        env = HeistEnvironment(config)
-        architect = ArchitectAgent(grid_rows=grid_size, grid_cols=grid_size, budget=15)
-        solver = SolverAgent(grid_rows=grid_size, grid_cols=grid_size)
-        
-        # Try to load trained models
-        arch_path = os.path.join(save_dir, "architect_ep500.pt")
-        solver_path = os.path.join(save_dir, "solver_ep500.pt")
-        if os.path.exists(arch_path):
-            architect.load(arch_path)
-        if os.path.exists(solver_path):
-            solver.load(solver_path)
+        socketio.emit('demo_started', {})
         
         # Generate and run
-        walls, cameras, guards = architect.generate_layout(temperature=0.5)
-        env.set_layout(walls, cameras, guards)
-        obs = env.reset()
-        solver.reset()
-        state_tensor = env.get_state_tensor()
-        
-        frames = []
-        for step in range(config.max_steps):
-            frames.append(env.get_environment_state())
-            action = solver.select_action(state_tensor)
-            obs, reward, done, info = env.step(action)
-            state_tensor = env.get_state_tensor()
-            if done:
-                frames.append(env.get_environment_state())
-                break
+        demo = trainer.demo_episode()
         
         # Stream frames
-        for i, frame in enumerate(frames):
+        for i, frame in enumerate(demo["frames"]):
             socketio.emit('demo_frame', {
                 'frame': frame,
                 'step': i,
-                'total': len(frames),
+                'total': len(demo["frames"]),
             })
             socketio.sleep(0.1)
         
         socketio.emit('demo_complete', {
-            'outcome': info.get('status', 'unknown'),
-            'steps': len(frames),
+            'outcome': demo["outcome"],
+            'steps': demo["total_steps"],
         })
     
     return app, socketio

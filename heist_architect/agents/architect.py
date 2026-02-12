@@ -122,8 +122,12 @@ class ArchitectAgent:
         _, new_values, _ = self.network(state_tensor)
         new_value = new_values.squeeze()
         
-        # Value loss
-        value_loss = F.mse_loss(new_value.expand_as(old_values), rewards) if len(rewards) > 0 else torch.tensor(0.0)
+        # Value loss (new_value is scalar from single state, so compare against mean reward)
+        if len(rewards) > 0:
+            target_value = rewards.mean()
+            value_loss = F.mse_loss(new_value, target_value)
+        else:
+            value_loss = torch.tensor(0.0, device=DEVICE)
         
         # Policy loss (simplified PPO)
         policy_loss = -(old_log_probs * advantages.detach()).mean()
@@ -160,7 +164,7 @@ class ArchitectAgent:
     
     def load(self, path: str):
         """Load a saved model."""
-        checkpoint = torch.load(path, map_location=DEVICE)
+        checkpoint = torch.load(path, map_location=DEVICE, weights_only=False)
         self.network.load_state_dict(checkpoint["network"])
         self.optimizer.load_state_dict(checkpoint["optimizer"])
         self.episode_count = checkpoint.get("episode_count", 0)
