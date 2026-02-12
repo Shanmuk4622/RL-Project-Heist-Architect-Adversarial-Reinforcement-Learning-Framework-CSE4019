@@ -1,0 +1,59 @@
+# Heist Architect: Default Configuration
+# ========================================
+
+environment:
+  grid_rows: 20
+  grid_cols: 20
+  max_steps: 200
+  start_pos: [1, 1]
+  vault_pos: [18, 18]
+
+budget:
+  initial: 8
+  curriculum:
+    - [0, 8]       # Episodes 0+:   basic budget
+    - [50, 12]     # Episodes 50+:  moderate budget
+    - [150, 18]    # Episodes 150+: high budget
+    - [300, 25]    # Episodes 300+: full budget
+  costs:
+    wall: 1
+    camera: 3
+    guard: 5
+
+rewards:
+  solver_vault: 10.0
+  solver_detected: -1.0
+  solver_step: -0.01
+  solver_timeout: -0.5
+  architect_detect: 1.0
+  architect_invalid: -1.0
+  architect_vault_fail: -0.5
+  architect_difficulty_bonus: 0.2
+
+training:
+  total_episodes: 500
+  solver_episodes_per_layout: 20
+  architect_lr: 0.0003
+  solver_lr: 0.0003
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_epsilon: 0.2
+  entropy_coeff: 0.01
+  value_coeff: 0.5
+  max_grad_norm: 0.5
+  ppo_epochs: 4
+  batch_size: 64
+
+security:
+  camera:
+    default_fov: 60.0
+    default_rotation_speed: 15.0
+    default_vision_range: 6
+  guard:
+    default_fov: 90.0
+    default_vision_range: 4
+    default_speed: 1
+
+visualization:
+  server_port: 5000
+  update_interval_ms: 100

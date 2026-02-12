@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heist Architect — Adversarial RL Dashboard</title>
+    <meta name="description"
+        content="Real-time visualization dashboard for the Heist Architect adversarial reinforcement learning framework">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon">🏦</span>
+                    <div>
+                        <h1>Heist Architect</h1>
+                        <span class="subtitle">Adversarial RL Framework</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Ready</span>
+                </div>
+                <div class="device-badge" id="deviceBadge">
+                    <span class="device-icon">⚡</span>
+                    <span>GPU</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Left Panel: Grid Visualization -->
+            <section class="panel grid-panel">
+                <div class="panel-header">
+                    <h2>🗺️ Environment Grid</h2>
+                    <div class="panel-controls">
+                        <span class="tick-counter" id="tickCounter">Tick: 0</span>
+                        <button class="btn btn-icon" id="toggleVisibility" title="Toggle Visibility">
+                            <span>👁️</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="gridCanvas" width="600" height="600"></canvas>
+                    <div class="canvas-overlay" id="canvasOverlay">
+                        <span class="overlay-text">Run Training or Demo to visualize</span>
+                    </div>
+                </div>
+                <div class="legend">
+                    <div class="legend-item"><span class="legend-color" style="background: #e8ecf4;"></span>Empty</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #6b7280;"></span>Wall</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #10b981;"></span>Start</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #f43f5e;"></span>Vault</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #8b5cf6;"></span>Camera</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #f97316;"></span>Guard</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #eab308;"></span>Solver</div>
+                    <div class="legend-item"><span class="legend-color vision-cone"></span>Vision</div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Controls & Metrics -->
+            <aside class="panel control-panel">
+                <!-- Training Controls -->
+                <div class="card controls-card">
+                    <h3>⚙️ Training Controls</h3>
+                    <div class="control-group">
+                        <label>Episodes</label>
+                        <input type="number" id="inputEpisodes" value="500" min="10" max="10000" class="input">
+                    </div>
+                    <div class="control-group">
+                        <label>Solver Attempts / Layout</label>
+                        <input type="number" id="inputSolverAttempts" value="20" min="1" max="200" class="input">
+                    </div>
+                    <div class="button-row">
+                        <button class="btn btn-primary" id="btnTrain">
+                            <span>🚀</span> Start Training
+                        </button>
+                        <button class="btn btn-secondary" id="btnDemo">
+                            <span>🎬</span> Run Demo
+                        </button>
+                    </div>
+                    <div class="progress-container" id="progressContainer" style="display:none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <span class="progress-text" id="progressText">0%</span>
+                    </div>
+                </div>
+
+                <!-- Live Metrics -->
+                <div class="card metrics-card">
+                    <h3>📊 Live Metrics</h3>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <span class="metric-label">Episode</span>
+                            <span class="metric-value" id="metricEpisode">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Solve Rate</span>
+                            <span class="metric-value solve" id="metricSolveRate">0%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Detection Rate</span>
+                            <span class="metric-value detect" id="metricDetectionRate">0%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Architect Reward</span>
+                            <span class="metric-value" id="metricArchReward">0.00</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Solver Reward</span>
+                            <span class="metric-value" id="metricSolverReward">0.00</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Avg Steps</span>
+                            <span class="metric-value" id="metricAvgSteps">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Budget</span>
+                            <span class="metric-value" id="metricBudget">8</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="card chart-card">
+                    <h3>📈 Training Progress</h3>
+                    <div class="chart-tabs">
+                        <button class="chart-tab active" data-chart="rewards">Rewards</button>
+                        <button class="chart-tab" data-chart="rates">Rates</button>
+                    </div>
+                    <canvas id="chartCanvas" width="400" height="200"></canvas>
+                </div>
+
+                <!-- Environment Info -->
+                <div class="card info-card">
+                    <h3>🏗️ Current Layout</h3>
+                    <div class="layout-stats" id="layoutStats">
+                        <div class="stat"><span>Walls:</span> <span id="statWalls">0</span></div>
+                        <div class="stat"><span>Cameras:</span> <span id="statCameras">0</span></div>
+                        <div class="stat"><span>Guards:</span> <span id="statGuards">0</span></div>
+                        <div class="stat"><span>Level Valid:</span> <span id="statValid">—</span></div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
