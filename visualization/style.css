@@ -451,6 +451,51 @@ body {
     box-shadow: var(--shadow-soft);
 }
 
+.controls-card {
+    border-top: 3px solid var(--accent-indigo);
+}
+
+.interactive-card {
+    border-top: 3px solid var(--accent-orange);
+}
+
+.simulation-card {
+    border-top: 3px solid var(--accent-magenta);
+}
+
+.metrics-card {
+    border-top: 3px solid var(--accent-cyan);
+}
+
+.chart-card {
+    border-top: 3px solid var(--accent-emerald);
+}
+
+.info-card {
+    border-top: 3px solid var(--text-muted);
+}
+
+/* ---- Inputs & Selects ---- */
+.select-input {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.select-input:hover,
+.select-input:focus {
+    border-color: var(--accent-magenta);
+    background: rgba(15, 23, 42, 0.8);
+    outline: none;
+}
+
 .btn-icon {
     background: var(--bg-card);
     border: 1.5px solid var(--border-subtle);
@@ -787,6 +832,29 @@ body {
 .btn-interactive:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+}
+
+.btn-interactive:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-simulation {
+    width: 100%;
+    margin-top: 12px;
+    background: linear-gradient(135deg, var(--accent-magenta) 0%, #d946ef 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+.btn-simulation:hover:not(:disabled) {
+    background: linear-gradient(135deg, #c026d3 0%, #d946ef 100%);
+    box-shadow: 0 4px 15px rgba(217, 70, 239, 0.25);
+    transform: translateY(-2px);
+}
+
+.btn-simulation:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .btn-interactive:disabled {

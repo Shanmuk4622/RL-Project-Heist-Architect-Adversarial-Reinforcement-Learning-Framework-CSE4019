@@ -263,12 +263,19 @@ def create_app(save_dir="checkpoints", grid_size=20):
     
     @socketio.on('run_demo')
     def handle_demo(data=None):
+        if state["is_training"]:
+            socketio.emit('error', {'message': 'Training in progress'})
+            return
+            
         trainer = _get_or_create_trainer()
         
         socketio.emit('demo_started', {})
         
-        # Generate and run
-        demo = trainer.demo_episode()
+        # Generate and run (using default demo parameters)
+        # We can now use simulate_episode for better demos too, but keep legacy demo_episode for now
+        # OR better: use simulate_episode for demo too to get the "clean" behavior
+        # Let's switch standard demo to use simulate_episode with default params
+        demo = trainer.simulate_episode(budget=15, solver_attempts=1)
         
         # Stream frames
         for i, frame in enumerate(demo["frames"]):
@@ -283,6 +290,67 @@ def create_app(save_dir="checkpoints", grid_size=20):
             'outcome': demo["outcome"],
             'steps': demo["total_steps"],
         })
+
+    @socketio.on('get_checkpoints')
+    def handle_get_checkpoints(data=None):
+        """Return list of available checkpoints."""
+        trainer = _get_or_create_trainer()
+        checkpoints = trainer.list_checkpoints()
+        socketio.emit('checkpoints_list', {'checkpoints': checkpoints})
+
+    @socketio.on('run_simulation')
+    def handle_simulation(data):
+        """Run a simulation with specific checkpoint and parameters."""
+        if state["is_training"]:
+            socketio.emit('error', {'message': 'Training in progress'})
+            return
+        
+        episode = int(data.get('episode', 0))
+        budget = int(data.get('budget', 15))
+        solver_attempts = int(data.get('solver_attempts', 1))
+        
+        trainer = _get_or_create_trainer()
+        state["is_training"] = True
+        
+        def run_sim():
+            try:
+                # Load checkpoint
+                if not trainer.load_checkpoint(episode):
+                    socketio.emit('error', {'message': f'Could not load checkpoint for episode {episode}'})
+                    return
+                
+                socketio.emit('simulation_started', {
+                    'episode': episode,
+                    'budget': budget
+                })
+                
+                # Run simulation
+                result = trainer.simulate_episode(budget=budget, solver_attempts=solver_attempts)
+                
+                # Stream frames
+                for i, frame in enumerate(result["frames"]):
+                    socketio.emit('simulation_frame', {
+                        'frame': frame,
+                        'step': i,
+                        'total': len(result["frames"]),
+                    })
+                    socketio.sleep(0.1) # Smooth playback
+                
+                socketio.emit('simulation_complete', {
+                    'outcome': result["outcome"],
+                    'steps': result["total_steps"],
+                    'reward': result["reward"]
+                })
+                
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                socketio.emit('error', {'message': str(e)})
+            finally:
+                state["is_training"] = False
+        
+        thread = threading.Thread(target=run_sim, daemon=True)
+        thread.start()
     
     return app, socketio
 

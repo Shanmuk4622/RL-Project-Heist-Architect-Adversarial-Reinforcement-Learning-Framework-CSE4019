@@ -195,6 +195,35 @@
                     </button>
                 </div>
 
+                <!-- Simulation Controls -->
+                <div class="card simulation-card">
+                    <h3>✨ Path Simulation</h3>
+                    <p class="card-desc">Visualize performance at specific training milestones.</p>
+
+                    <div class="control-group">
+                        <label>Load Checkpoint (Episode)</label>
+                        <select id="simCheckpoint" class="input select-input">
+                            <option value="" disabled selected>Loading...</option>
+                        </select>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group half">
+                            <label>Budget</label>
+                            <input type="number" id="simBudget" value="15" min="5" max="50" class="input">
+                        </div>
+                        <div class="control-group half">
+                            <label>Best of (N)</label>
+                            <input type="number" id="simAttempts" value="5" min="1" max="50" class="input"
+                                title="Solver attempts">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-simulation" id="btnSimulate">
+                        <span>🎬</span> Simulate Demo
+                    </button>
+                </div>
+
                 <!-- Live Metrics -->
                 <div class="card metrics-card">
                     <h3>📊 Live Metrics</h3>

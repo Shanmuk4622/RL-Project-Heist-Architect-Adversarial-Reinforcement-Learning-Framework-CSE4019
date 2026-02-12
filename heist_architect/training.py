@@ -97,6 +97,11 @@ class TrainingMetrics:
         with open(path, 'w') as f:
             json.dump(self.history, f, indent=2)
     
+    def load(self, path: str):
+        if os.path.exists(path):
+            with open(path, 'r') as f:
+                self.history = json.load(f)
+
     def get_summary(self, last_n: int = 10) -> str:
         lines = []
         for key in ["solve_rate", "detection_rate", "architect_reward", "solver_reward"]:
@@ -200,41 +205,54 @@ class AdversarialTrainer:
         
         return max(episodes) if episodes else None
     
+    def list_checkpoints(self) -> List[int]:
+        """Return a sorted list of available checkpoint episode numbers."""
+        checkpoints = []
+        # Look for solver checkpoints as the source of truth
+        files = glob.glob(os.path.join(self.save_dir, "solver_ep*.pt"))
+        for f in files:
+            match = re.search(r"solver_ep(\d+).pt", f)
+            if match:
+                checkpoints.append(int(match.group(1)))
+        return sorted(checkpoints)
+
+    def load_checkpoint(self, episode: int) -> bool:
+        """Load a specific checkpoint episode. Returns True if successful."""
+        arch_path = os.path.join(self.save_dir, f"architect_ep{episode}.pt")
+        solver_path = os.path.join(self.save_dir, f"solver_ep{episode}.pt")
+        
+        if not (os.path.exists(arch_path) and os.path.exists(solver_path)):
+            print(f"Checkpoint not found for episode {episode}")
+            return False
+            
+        print(f"Loading checkpoint from episode {episode}...")
+        self.architect.load(arch_path)
+        self.solver.load(solver_path)
+        
+        # Try to load metrics if available, but not critical for simulation
+        metrics_path = os.path.join(self.log_dir, "training_metrics.json")
+        if os.path.exists(metrics_path):
+            self.metrics.load(metrics_path)
+            
+        # Try to load game log
+        log_path = os.path.join(self.log_dir, "game_log.json")
+        if os.path.exists(log_path):
+            with open(log_path, 'r') as f:
+                self.game_log = [GameLogEntry(**entry) for entry in json.load(f)]
+                
+        self.global_episode = episode
+        return True
+
     def resume_from_checkpoint(self) -> int:
         """
         Load the latest checkpoint and return the episode number.
         Returns 0 if no checkpoint found.
         """
-        latest = self.find_latest_checkpoint()
-        
-        if latest is None:
+        latest_ep = self.find_latest_checkpoint()
+        if latest_ep is None:
             print("  No checkpoints found. Starting from scratch.")
             return 0
         
-        arch_path = os.path.join(self.save_dir, f"architect_ep{latest}.pt")
-        solver_path = os.path.join(self.save_dir, f"solver_ep{latest}.pt")
-        
-        if os.path.exists(arch_path):
-            self.architect.load(arch_path)
-            print(f"  Loaded Architect from {arch_path}")
-        
-        if os.path.exists(solver_path):
-            self.solver.load(solver_path)
-            print(f"  Loaded Solver from {solver_path}")
-        
-        # Load game log if exists
-        log_path = os.path.join(self.log_dir, "game_log.json")
-        if os.path.exists(log_path):
-            with open(log_path, 'r') as f:
-                log_data = json.load(f)
-                self.game_log = [GameLogEntry(**entry) for entry in log_data]
-                # Fix: GameLogEntry stores in .data, so we need to reconstruct properly
-                self.game_log = []
-                for entry in log_data:
-                    ge = GameLogEntry.__new__(GameLogEntry)
-                    ge.data = entry
-                    self.game_log.append(ge)
-            print(f"  Loaded game log ({len(self.game_log)} entries)")
         
         # Load training metrics if exists
         metrics_path = os.path.join(self.log_dir, "training_metrics.json")
@@ -699,37 +717,81 @@ class AdversarialTrainer:
         )
         self._save_game_log()
     
-    def demo_episode(self) -> Dict:
+    def simulate_episode(self, budget: int = 15, solver_attempts: int = 1) -> Dict:
         """
-        Run a single demo episode for visualization.
-        Returns the full environment state at each step.
+        Run a simulation with specific parameters and return frames for playback.
+        Runs multiple attempts and returns the best one.
         """
-        # Generate a layout
+        # Set architect budget temporarily
+        original_budget = self.architect.budget
+        self.architect.budget = budget
+        
+        # Generate layout
         walls, cameras, guards = self.architect.generate_layout(temperature=0.5)
         self.env.set_layout(walls, cameras, guards)
         
-        obs = self.env.reset()
-        self.solver.reset()
+        # Restore budget
+        self.architect.budget = original_budget
         
-        frames = []
-        state = self.env.get_state_tensor()
+        best_outcome = "timeout"
+        best_frames = []
+        max_reward = -float('inf')
         
-        for step in range(self.config.max_steps):
-            frames.append(self.env.get_environment_state())
-            
-            action = self.solver.select_action(state)
-            obs, reward, done, info = self.env.step(action)
+        # Run attempts
+        for i in range(solver_attempts):
+            obs = self.env.reset()
+            self.solver.reset()
+            frames = []
+            episode_reward = 0.0
             state = self.env.get_state_tensor()
+            outcome = "timeout"
             
-            if done:
+            for step in range(self.config.max_steps):
+                # Store frame only for the potential best episode
                 frames.append(self.env.get_environment_state())
-                break
-        
-        # Clean up buffers — demo fills them via select_action but we don't learn
-        self.solver._clear_buffers()
+                
+                action = self.solver.select_action(state)
+                obs, reward, done, info = self.env.step(action)
+                state = self.env.get_state_tensor()
+                episode_reward += reward
+                
+                if done:
+                    frames.append(self.env.get_environment_state())
+                    outcome = info.get("status", "timeout")
+                    break
+            
+            # Clean up buffers immediately
+            self.solver._clear_buffers()
+            
+            # Determine if this attempt is better
+            # Priority: Vault Reached > Not Detected > Higher Reward
+            is_better = False
+            
+            if i == 0:
+                is_better = True
+            else:
+                if outcome == "vault_reached":
+                    if best_outcome != "vault_reached":
+                        is_better = True
+                    elif episode_reward > max_reward:
+                        is_better = True
+                elif outcome == "detected":
+                    if best_outcome == "timeout":
+                        is_better = True
+                    elif best_outcome == "detected" and episode_reward > max_reward:
+                        is_better = True
+                elif outcome == "timeout":
+                    if best_outcome == "timeout" and episode_reward > max_reward:
+                        is_better = True
+            
+            if is_better:
+                best_outcome = outcome
+                max_reward = episode_reward
+                best_frames = frames
         
         return {
-            "frames": frames,
-            "outcome": info.get("status", "unknown"),
-            "total_steps": self.env.tick,
+            "frames": best_frames,
+            "outcome": best_outcome,
+            "total_steps": len(best_frames) - 1,
+            "reward": max_reward
         }

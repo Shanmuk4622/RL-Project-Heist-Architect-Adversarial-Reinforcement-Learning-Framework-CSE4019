@@ -93,6 +93,9 @@ function init() {
             }
         })
         .catch(() => { });
+
+    // Load checkpoints
+    socket.emit('get_checkpoints');
 }
 
 // ==================================================================
@@ -209,6 +212,43 @@ function setupSocketEvents() {
         setStatus(`Error: ${data.message}`, 'error');
         setButtonsDisabled(false);
     });
+
+    socket.on('checkpoints_list', (data) => {
+        const select = document.getElementById('simCheckpoint');
+
+        if (!data.checkpoints || data.checkpoints.length === 0) {
+            select.innerHTML = '<option value="" disabled selected>No checkpoints found</option>';
+            return;
+        }
+
+        select.innerHTML = '<option value="" disabled>Select Episode...</option>';
+        data.checkpoints.forEach(ep => {
+            const opt = document.createElement('option');
+            opt.value = ep;
+            opt.text = `Episode ${ep}`;
+            select.add(opt);
+        });
+
+        // Auto-select latest
+        select.value = data.checkpoints[data.checkpoints.length - 1];
+    });
+
+    socket.on('simulation_started', (data) => {
+        setStatus(`Simulating Ep ${data.episode} (Budget ${data.budget})...`, 'training');
+        canvasOverlay.style.display = 'none';
+        setButtonsDisabled(true);
+    });
+
+    socket.on('simulation_frame', (data) => {
+        renderGrid(data.frame);
+        tickCounter.textContent = `Step: ${data.step + 1}/${data.total}`;
+    });
+
+    socket.on('simulation_complete', (data) => {
+        const outcomeEmoji = data.outcome === 'vault_reached' ? '🏆' : (data.outcome === 'detected' ? '🚨' : '⏱️');
+        setStatus(`Simulation: ${outcomeEmoji} ${data.outcome} (Reward: ${data.reward.toFixed(2)})`, 'complete');
+        setButtonsDisabled(false);
+    });
 }
 
 // ==================================================================
@@ -249,6 +289,24 @@ function setupUIEvents() {
 
         socket.emit('run_interactive', params);
     });
+
+    // Simulate button
+    const btnSimulate = document.getElementById('btnSimulate');
+    if (btnSimulate) {
+        btnSimulate.addEventListener('click', () => {
+            const episode = parseInt(document.getElementById('simCheckpoint').value);
+            if (!episode) return;
+
+            const budget = parseInt(document.getElementById('simBudget').value) || 15;
+            const attempts = parseInt(document.getElementById('simAttempts').value) || 5;
+
+            socket.emit('run_simulation', {
+                episode: episode,
+                budget: budget,
+                solver_attempts: attempts
+            });
+        });
+    }
 
     // Toggle vision
     document.getElementById('toggleVisibility').addEventListener('click', () => {
@@ -341,12 +399,16 @@ function renderGrid(data) {
         }
     }
 
-    // Draw vision cones
-    if (showVision && data.vision_zones) {
+    // Draw visibility/vision cones (visibility is a 2D array from environment)
+    if (showVision && data.visibility) {
         gridCtx.fillStyle = CONFIG.VISION_CONE;
-        data.vision_zones.forEach(([r, c]) => {
-            gridCtx.fillRect(c * cellW, r * cellH, cellW, cellH);
-        });
+        for (let r = 0; r < data.visibility.length; r++) {
+            for (let c = 0; c < data.visibility[r].length; c++) {
+                if (data.visibility[r][c] > 0) {
+                    gridCtx.fillRect(c * cellW, r * cellH, cellW, cellH);
+                }
+            }
+        }
     }
 
     // Draw solver path (the trail from start to current position)
@@ -623,6 +685,8 @@ function setButtonsDisabled(disabled) {
     document.getElementById('btnTrain').disabled = disabled;
     document.getElementById('btnDemo').disabled = disabled;
     document.getElementById('btnInteractive').disabled = disabled;
+    const btnSim = document.getElementById('btnSimulate');
+    if (btnSim) btnSim.disabled = disabled;
 }
 
 // ==================================================================
