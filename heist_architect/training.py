@@ -249,21 +249,14 @@ class AdversarialTrainer:
         Returns 0 if no checkpoint found.
         """
         latest_ep = self.find_latest_checkpoint()
-        if latest_ep is None:
+        if latest_ep == 0 or latest_ep is None:
             print("  No checkpoints found. Starting from scratch.")
             return 0
         
-        
-        # Load training metrics if exists
-        metrics_path = os.path.join(self.log_dir, "training_metrics.json")
-        if os.path.exists(metrics_path):
-            with open(metrics_path, 'r') as f:
-                self.metrics.history = json.load(f)
-            print(f"  Loaded training metrics")
-        
-        self.global_episode = latest
-        print(f"  Resuming from episode {latest}")
-        return latest
+        if self.load_checkpoint(latest_ep):
+            print(f"  Resuming from episode {latest_ep}")
+            return latest_ep
+        return 0
     
     # ==================================================================
     # Curriculum
