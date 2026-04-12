@@ -337,13 +337,14 @@ class AdversarialTrainer:
     # Main Training Loop
     # ==================================================================
     
-    def train(self, callback=None, resume: bool = False):
+    def train(self, callback=None, frame_callback=None, resume: bool = False):
         """
         Run the full adversarial training loop.
         
         Args:
             callback: Optional function called each episode with 
                       (episode, metrics, env_state)
+            frame_callback: Streams frames directly for Live Broadcast
             resume: If True, load latest checkpoint before training
         """
         self.training_active = True
@@ -377,6 +378,7 @@ class AdversarialTrainer:
             ep_metrics, log_entry = self._run_one_episode(
                 episode=episode,
                 is_interactive=False,
+                frame_callback=frame_callback,
             )
             
             # Log
@@ -426,7 +428,8 @@ class AdversarialTrainer:
                           temperature_override: float = None,
                           solver_attempts_override: int = None,
                           allow_cameras_override: bool = None,
-                          allow_guards_override: bool = None):
+                          allow_guards_override: bool = None,
+                          frame_callback=None):
         """
         Run a single training episode. Used by both train() and interactive mode.
         
@@ -476,6 +479,9 @@ class AdversarialTrainer:
             
             # Apply layout to environment
             is_valid = self.env.set_layout(walls, cameras, guards)
+            
+            if frame_callback:
+                frame_callback(self.env.get_environment_state())
             
             if not is_valid:
                 invalid_attempts += 1
@@ -535,6 +541,9 @@ class AdversarialTrainer:
             for step in range(self.config.max_steps):
                 action = self.solver.select_action(state)
                 obs, reward, done, info = self.env.step(action)
+                
+                if frame_callback and (attempt == 0 or attempt == solver_attempts - 1):
+                    frame_callback(self.env.get_environment_state())
                 
                 self.solver.store_transition(reward, done)
                 episode_reward += reward

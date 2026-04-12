@@ -140,6 +140,7 @@ def create_app(save_dir="checkpoints", grid_size=20):
         episodes = data.get('episodes', 500)
         solver_attempts = data.get('solver_attempts', 20)
         resume = data.get('resume', True)  # Auto-resume by default
+        live_broadcast = data.get('live_broadcast', False)
         
         trainer = _get_or_create_trainer(episodes, solver_attempts)
         trainer.total_episodes = episodes
@@ -158,9 +159,14 @@ def create_app(save_dir="checkpoints", grid_size=20):
             if trainer.game_log:
                 socketio.emit('game_log_entry', trainer.game_log[-1].to_dict())
         
+        def frame_callback(env_state):
+            if live_broadcast:
+                socketio.emit('env_state', env_state)
+                socketio.sleep(0.04) # Roughly 25 FPS frame delay to render perfectly
+        
         def run_training():
             try:
-                trainer.train(callback=training_callback, resume=resume)
+                trainer.train(callback=training_callback, frame_callback=frame_callback if live_broadcast else None, resume=resume)
             finally:
                 state["is_training"] = False
                 socketio.emit('training_complete', {

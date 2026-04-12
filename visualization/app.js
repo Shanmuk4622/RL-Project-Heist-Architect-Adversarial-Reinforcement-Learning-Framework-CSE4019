@@ -282,11 +282,13 @@ function setupUIEvents() {
     document.getElementById('btnTrain').addEventListener('click', () => {
         const episodes = parseInt(document.getElementById('inputEpisodes').value) || 500;
         const solverAttempts = parseInt(document.getElementById('inputSolverAttempts').value) || 20;
+        const liveBroadcast = document.getElementById('inputLiveBroadcast') ? document.getElementById('inputLiveBroadcast').checked : false;
 
         socket.emit('start_training', {
             episodes: episodes,
             solver_attempts: solverAttempts,
             resume: true,
+            live_broadcast: liveBroadcast
         });
     });
 
