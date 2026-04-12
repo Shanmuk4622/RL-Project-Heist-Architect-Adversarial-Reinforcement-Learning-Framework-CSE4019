@@ -147,11 +147,72 @@ class ArchitectAgent:
             "architect_avg_reward": self.total_reward / max(self.episode_count, 1),
         }
         
-        # Clear buffers
+    def _clear_buffers(self):
+        """Clear experience buffers."""
         self.log_probs.clear()
         self.values.clear()
         self.rewards.clear()
         
+    def update(self) -> Dict[str, float]:
+        """
+        Update the Architect's policy using PPO.
+        
+        Returns:
+            Dict with training metrics
+        """
+        if len(self.rewards) == 0:
+            return {"architect_loss": 0.0}
+        
+        self.network.train()
+        
+        # Convert to tensors
+        rewards = torch.FloatTensor(self.rewards).to(DEVICE)
+        old_log_probs = torch.stack(self.log_probs).to(DEVICE).detach()
+        old_values = torch.stack([v.squeeze() for v in self.values]).to(DEVICE).detach()
+        
+        # Normalize rewards
+        if len(rewards) > 1:
+            rewards = (rewards - rewards.mean()) / (rewards.std() + 1e-8)
+        
+        # Compute advantages
+        advantages = rewards - old_values
+        
+        # PPO update
+        # Re-evaluate (simplified: use stored log_probs since layout is fixed)
+        grid_state = np.zeros((1, 1, self.grid_rows, self.grid_cols), dtype=np.float32)
+        grid_state[0, 0, 1, 1] = TileType.START / 5.0
+        grid_state[0, 0, self.grid_rows - 2, self.grid_cols - 2] = TileType.VAULT / 5.0
+        state_tensor = torch.FloatTensor(grid_state).to(DEVICE)
+        
+        _, new_values, _ = self.network(state_tensor)
+        new_value = new_values.squeeze()
+        
+        # Value loss (new_value is scalar from single state, so compare against mean reward)
+        if len(rewards) > 0:
+            target_value = rewards.mean()
+            value_loss = F.mse_loss(new_value, target_value)
+        else:
+            value_loss = torch.tensor(0.0, device=DEVICE)
+        
+        # Policy loss (simplified PPO)
+        policy_loss = -(old_log_probs * advantages.detach()).mean()
+        
+        # Total loss
+        total_loss = policy_loss + self.value_coeff * value_loss
+        
+        self.optimizer.zero_grad()
+        total_loss.backward()
+        nn.utils.clip_grad_norm_(self.network.parameters(), 0.5)
+        self.optimizer.step()
+        
+        metrics = {
+            "architect_policy_loss": policy_loss.item(),
+            "architect_value_loss": value_loss.item() if isinstance(value_loss, torch.Tensor) else 0.0,
+            "architect_total_loss": total_loss.item(),
+            "architect_avg_reward": self.total_reward / max(self.episode_count, 1),
+        }
+        
+        self._clear_buffers()
         return metrics
     
     def save(self, path: str):

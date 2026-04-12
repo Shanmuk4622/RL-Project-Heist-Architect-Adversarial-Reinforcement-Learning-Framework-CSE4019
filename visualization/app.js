@@ -96,6 +96,28 @@ function init() {
 
     // Load checkpoints
     socket.emit('get_checkpoints');
+
+    // Load historical metrics
+    fetch('/api/metrics')
+        .then(r => r.json())
+        .then(data => {
+            if (data && data.episode && data.episode.length > 0) {
+                chartData.episodes = data.episode;
+                chartData.solve_rates = data.solve_rate || [];
+                chartData.detection_rates = data.detection_rate || [];
+                chartData.arch_rewards = data.architect_reward || [];
+                chartData.solver_rewards = data.solver_reward || [];
+                renderChart();
+                
+                // Set total episodes for progress bar if resuming
+                const maxEp = Math.max(...data.episode);
+                if (maxEp > 0 && maxEp > totalTrainingEpisodes) {
+                    totalTrainingEpisodes = maxEp;
+                    updateProgress(maxEp);
+                }
+            }
+        })
+        .catch(() => {});
 }
 
 // ==================================================================

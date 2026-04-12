@@ -10,6 +10,19 @@ import torch.nn.functional as F
 from typing import Tuple
 
 
+class ResidualBlock(nn.Module):
+    def __init__(self, channels: int):
+        super().__init__()
+        self.conv1 = nn.Conv2d(channels, channels, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(channels, channels, kernel_size=3, padding=1)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        res = x
+        out = F.relu(self.conv1(x))
+        out = self.conv2(out)
+        return F.relu(out + res)
+
+
 class SolverNetwork(nn.Module):
     """
     Policy + Value network for the Solver agent.
@@ -161,8 +174,8 @@ class ArchitectNetwork(nn.Module):
             nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.ReLU(),
+            ResidualBlock(64),
+            ResidualBlock(64),
         )
         
         # Global feature extraction
@@ -173,8 +186,8 @@ class ArchitectNetwork(nn.Module):
         # Output: (batch, num_asset_types + 1, rows, cols)
         # Channel per asset type + 1 for "no placement"
         self.decoder = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.ReLU(),
+            ResidualBlock(64),
+            ResidualBlock(64),
             nn.Conv2d(64, 32, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.Conv2d(32, num_asset_types + 1, kernel_size=1),  # per-cell logits

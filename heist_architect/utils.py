@@ -124,6 +124,34 @@ def manhattan_distance(a: Tuple[int, int], b: Tuple[int, int]) -> int:
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
+def bfs_distance_map(grid: np.ndarray, goal: Tuple[int, int]) -> np.ndarray:
+    """
+    Computes geodesic distance from all walkable cells to the goal using BFS.
+    Returns a 2D numpy array where unreachable cells or walls have a high max distance.
+    """
+    rows, cols = grid.shape
+    max_dist = float(rows * cols)
+    dist_map = np.full((rows, cols), max_dist, dtype=np.float32)
+    dist_map[goal[0], goal[1]] = 0.0
+    
+    queue = deque([goal])
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    
+    while queue:
+        r, c = queue.popleft()
+        current_dist = dist_map[r, c]
+        
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols:
+                # Walkable paths only
+                if grid[nr, nc] != TileType.WALL and dist_map[nr, nc] > current_dist + 1:
+                    dist_map[nr, nc] = current_dist + 1
+                    queue.append((nr, nc))
+                    
+    return dist_map
+
+
 # ---------------------------------------------------------------------------
 # Grid Helpers
 # ---------------------------------------------------------------------------

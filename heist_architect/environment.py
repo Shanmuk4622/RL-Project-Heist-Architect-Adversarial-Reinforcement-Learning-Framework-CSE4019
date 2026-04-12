@@ -9,7 +9,7 @@ import numpy as np
 from typing import List, Tuple, Dict, Optional, Any
 from dataclasses import dataclass, field
 
-from .utils import TileType, bfs_path_exists, create_empty_grid, grid_to_text, manhattan_distance
+from .utils import TileType, bfs_path_exists, create_empty_grid, grid_to_text, manhattan_distance, bfs_distance_map
 from .components.security import Wall, Camera, Guard
 from .components.visibility import DynamicVisibilityMap
 from .components.budget import BudgetManager, BUDGET_COSTS
@@ -87,8 +87,11 @@ class HeistEnvironment:
         self.solver_detected = False
         self.vault_reached = False
         
+        # Distance map
+        self.distance_map = bfs_distance_map(self.grid, self.config.vault_pos)
+        
         # Distance tracking for reward shaping
-        self._prev_dist = manhattan_distance(self.config.start_pos, self.config.vault_pos)
+        self._prev_dist = self.distance_map[self.config.start_pos[0], self.config.start_pos[1]]
         self._initial_dist = self._prev_dist
         
         # Episode history (for visualization)
@@ -148,7 +151,8 @@ class HeistEnvironment:
                 self.grid[guard.row, guard.col] = TileType.GUARD
                 self.guards.append(guard)
         
-        # Validate layout
+        # Update distance map & validate layout
+        self.distance_map = bfs_distance_map(self.grid, self.config.vault_pos)
         return self.is_level_valid()
     
     def is_level_valid(self) -> bool:
@@ -198,7 +202,7 @@ class HeistEnvironment:
         self.visibility_map.reset()
         
         # Reset distance tracking
-        self._prev_dist = manhattan_distance(self.solver_pos, self.config.vault_pos)
+        self._prev_dist = self.distance_map[self.solver_pos[0], self.solver_pos[1]]
         self._initial_dist = self._prev_dist
         
         # Reset camera headings and guard positions
@@ -258,7 +262,7 @@ class HeistEnvironment:
         self.visibility_map.update(self.cameras, self.guards, wall_mask)
         
         # 4. Distance-based reward shaping (CRITICAL for learning)
-        curr_dist = manhattan_distance(self.solver_pos, self.config.vault_pos)
+        curr_dist = self.distance_map[self.solver_pos[0], self.solver_pos[1]]
         # Reward for getting closer to vault, penalty for moving away
         dist_reward = (self._prev_dist - curr_dist) * 0.1
         reward += dist_reward
@@ -358,11 +362,12 @@ class HeistEnvironment:
         pos_channel[self.config.vault_pos[0], self.config.vault_pos[1]] = -1.0
         
         # Add distance gradient to help the network learn direction
+        max_d = float(rows * cols)
         for r in range(rows):
             for c in range(cols):
-                d = manhattan_distance((r, c), self.config.vault_pos)
-                max_d = rows + cols
-                pos_channel[r, c] += -0.3 * (d / max_d)  # gentle gradient toward vault
+                d = self.distance_map[r, c]
+                if d < max_d:
+                    pos_channel[r, c] += -0.3 * (d / (rows + cols))  # gentle gradient toward vault
         
         # Stack all: 3 channels total
         state = np.stack([

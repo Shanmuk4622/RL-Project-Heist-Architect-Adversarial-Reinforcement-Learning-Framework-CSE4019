@@ -458,25 +458,34 @@ class AdversarialTrainer:
         # -------------------------------------------------------
         # Step 1: Architect generates a layout
         # -------------------------------------------------------
-        walls, cameras, guards = self.architect.generate_layout(temperature)
+        is_valid = False
+        invalid_attempts = 0
         
-        # Filter by curriculum phase
-        if not allow_cameras:
-            cameras = []
-        if not allow_guards:
-            guards = []
-        
-        # Apply layout to environment
-        is_valid = self.env.set_layout(walls, cameras, guards)
+        while not is_valid and invalid_attempts < 50:
+            walls, cameras, guards = self.architect.generate_layout(temperature)
+            
+            # Filter by curriculum phase
+            if not allow_cameras:
+                cameras = []
+            if not allow_guards:
+                guards = []
+            
+            # Apply layout to environment
+            is_valid = self.env.set_layout(walls, cameras, guards)
+            
+            if not is_valid:
+                invalid_attempts += 1
+                if not freeze_architect:
+                    # Penalize architect for generating an invalid layout
+                    self.architect.store_reward(self.reward_calc.architect_invalid)
         
         num_walls = len(walls)
         num_cameras = len(cameras)
         num_guards = len(guards)
         
         if not is_valid:
-            # Penalize invalid layout, skip solver phase
+            # Penalize invalid layout (already handled inside the loop for the last attempt)
             if not freeze_architect:
-                self.architect.store_reward(self.reward_calc.architect_invalid)
                 self.architect.update()
             
             ep_metrics = {
@@ -719,9 +728,16 @@ class AdversarialTrainer:
         original_budget = self.architect.budget
         self.architect.budget = budget
         
-        # Generate layout
-        walls, cameras, guards = self.architect.generate_layout(temperature=0.5)
-        self.env.set_layout(walls, cameras, guards)
+        # Generate layout until valid (max 50 tries)
+        is_valid = False
+        attempts = 0
+        while not is_valid and attempts < 50:
+            walls, cameras, guards = self.architect.generate_layout(temperature=0.5)
+            is_valid = self.env.set_layout(walls, cameras, guards)
+            attempts += 1
+        
+        # Clear buffers BEFORE simulation (we don't want to store these for training)
+        self.architect._clear_buffers()
         
         # Restore budget
         self.architect.budget = original_budget
