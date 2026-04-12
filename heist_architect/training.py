@@ -226,8 +226,12 @@ class AdversarialTrainer:
             return False
             
         print(f"Loading checkpoint from episode {episode}...")
-        self.architect.load(arch_path)
-        self.solver.load(solver_path)
+        try:
+            self.architect.load(arch_path)
+            self.solver.load(solver_path)
+        except RuntimeError as e:
+            print(f"Failed to load checkpoint (architecture mismatch). Starting fresh.")
+            return False
         
         # Try to load metrics if available, but not critical for simulation
         metrics_path = os.path.join(self.log_dir, "training_metrics.json")

@@ -233,7 +233,7 @@ body {
     justify-content: space-between;
     padding: 16px 20px;
     border-bottom: 1px solid var(--border-subtle);
-    background: rgba(248, 249, 253, 0.5);
+    background: rgba(15, 18, 35, 0.5);
 }
 
 .panel-header h2 {
@@ -266,7 +266,7 @@ body {
     justify-content: center;
     padding: 20px;
     min-height: 500px;
-    background: linear-gradient(180deg, rgba(248, 249, 253, 0.3) 0%, rgba(240, 242, 248, 0.5) 100%);
+    background: linear-gradient(180deg, rgba(15, 18, 35, 0.3) 0%, rgba(11, 14, 26, 0.5) 100%);
 }
 
 #gridCanvas {
@@ -282,7 +282,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(244, 246, 251, 0.85);
+    background: rgba(11, 14, 26, 0.85);
     border-radius: var(--radius-md);
     transition: var(--transition);
     pointer-events: none;
@@ -306,7 +306,7 @@ body {
     gap: 14px;
     padding: 14px 20px;
     border-top: 1px solid var(--border-subtle);
-    background: rgba(248, 249, 253, 0.4);
+    background: rgba(15, 18, 35, 0.4);
 }
 
 .legend-item {
@@ -794,7 +794,7 @@ body {
     position: relative;
     width: 36px;
     height: 20px;
-    background: #d4d7e0;
+    background: rgba(99, 102, 241, 0.2);
     border-radius: 10px;
     transition: var(--transition);
     flex-shrink: 0;
