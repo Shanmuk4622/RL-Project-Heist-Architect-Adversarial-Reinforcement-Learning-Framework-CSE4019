@@ -27,7 +27,7 @@ def create_app(save_dir="checkpoints", grid_size=20):
     project_dir = os.path.dirname(viz_dir)
     
     app = Flask(__name__, static_folder=viz_dir)
-    app.config['SECRET_KEY'] = 'heist-architect-viz'
+    app.config['SECRET_KEY'] = 'REPLACE_WITH_SECRET_KEY'
     socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
     
     # Shared state — trainer persists across training + interactive sessions
