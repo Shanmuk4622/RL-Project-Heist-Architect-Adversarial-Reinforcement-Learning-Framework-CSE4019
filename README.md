@@ -18,6 +18,12 @@ It is focused on three things:
 - download or resync checkpoints from Hugging Face
 - run an interactive browser dashboard to visualize the game loop
 
+## Training Reports
+
+- [Training Analysis Report](README_TRAINING_ANALYSIS.md)
+- [Training Checkpoint Timeline](README_TRAINING_CHECKPOINTS.md)
+- [Training Charts Report](README_TRAINING_CHARTS.md)
+
 ## Project Structure
 
 - `main.py`: CLI entry point

@@ -9,12 +9,16 @@ Primary objectives:
 - avoid reintroducing legacy training/dashboard code
 
 ## Current Workspace Layout
-- `main.py`: project CLI (`list`, `test`, `download`)
+- `main.py`: project CLI (`list`, `test`, `download`, `dashboard`)
 - `hf_checkpoints/`: episode folders (`epXXXXX`) with model artifacts
 - `tools/download_hf_checkpoints.py`: robust Hugging Face downloader with retry passes
 - `tools/test_superior_checkpoint.py`: direct checkpoint integrity test script
+- `tools/generate_training_charts.py`: generates training PNG charts from milestone analysis
 - `requirements.txt`: minimal dependencies for checkpoint operations
 - `kaggle_training/`: reference notebook and notes (read-only context)
+- `README_TRAINING_ANALYSIS.md`: long-form training dynamics summary
+- `README_TRAINING_CHECKPOINTS.md`: checkpoint timeline and regime grouping
+- `README_TRAINING_CHARTS.md`: visual charts report
 
 ## Environment
 Use this environment before running commands:
@@ -46,6 +50,12 @@ Launch dashboard:
 
 ```powershell
 python main.py dashboard --host 127.0.0.1 --port 5000
+```
+
+Generate training charts report assets:
+
+```powershell
+python tools/generate_training_charts.py
 ```
 
 Download/sync checkpoints from Hugging Face:
@@ -111,3 +121,12 @@ A task is complete only when:
 - required file edits are applied
 - checkpoint test command succeeds (`python main.py test --episode ep17000`)
 - output confirms model files and metrics load correctly
+
+## How To Use This agent.md
+Use this file as your operating checklist when working in this repo:
+
+1. Start by activating `cv_conda` and checking `main.py list`.
+2. For model integrity work, run `main.py test --episode ep17000` before and after edits.
+3. For dashboard work, launch `main.py dashboard` and validate visual behavior.
+4. For training-history documentation updates, regenerate charts with `tools/generate_training_charts.py` and update README links.
+5. Before finishing, ensure no secrets are committed and checkpoint blobs remain untracked by git.
