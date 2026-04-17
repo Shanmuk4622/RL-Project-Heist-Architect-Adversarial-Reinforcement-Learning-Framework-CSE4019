@@ -16,9 +16,7 @@ Primary objectives:
 - `tools/generate_training_charts.py`: generates training PNG charts from milestone analysis
 - `requirements.txt`: minimal dependencies for checkpoint operations
 - `kaggle_training/`: reference notebook and notes (read-only context)
-- `README_TRAINING_ANALYSIS.md`: long-form training dynamics summary
-- `README_TRAINING_CHECKPOINTS.md`: checkpoint timeline and regime grouping
-- `README_TRAINING_CHARTS.md`: visual charts report
+- `README_TRAINING.md`: consolidated training analysis + timeline + charts
 
 ## Environment
 Use this environment before running commands:
