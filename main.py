@@ -1,209 +1,151 @@
-"""
-Heist Architect — Main Entry Point
-====================================
-CLI interface for training, demo, and visualization.
-
-Usage:
-    python main.py train [--episodes N] [--grid-size N] [--resume]
-    python main.py demo [--grid-size N] [--checkpoint N]
-    python main.py visualize [--port N]
-"""
+"""Dedicated CLI for Kaggle v2 checkpoint management and testing."""
 
 import argparse
-import yaml
+import json
 import os
-import sys
+import subprocess
+from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-
-def load_config(config_path: str = "configs/default.yaml") -> dict:
-    """Load configuration from YAML file."""
-    with open(config_path, 'r') as f:
-        return yaml.safe_load(f)
+import torch
 
 
-def cmd_train(args):
-    """Run adversarial training."""
-    from heist_architect.environment import EnvironmentConfig
-    from heist_architect.training import AdversarialTrainer
-    
-    config = EnvironmentConfig(
-        grid_rows=args.grid_size,
-        grid_cols=args.grid_size,
-        max_steps=args.max_steps,
-        start_pos=(1, 1),
-        vault_pos=(args.grid_size - 2, args.grid_size - 2),
-        architect_budget=8,  # starts at curriculum minimum
-    )
-    
-    trainer = AdversarialTrainer(
-        config=config,
-        total_episodes=args.episodes,
-        solver_episodes_per_layout=args.solver_attempts,
-        save_dir=args.save_dir,
-        log_dir=args.log_dir,
-    )
-    
-    trainer.train(resume=args.resume)
+DEFAULT_REPO = "Shanmuk4622/heist-architect-v2"
+DEFAULT_CHECKPOINT_ROOT = Path("hf_checkpoints")
 
 
-def cmd_demo(args):
-    """Run a demo episode and print results."""
-    from heist_architect.environment import HeistEnvironment, EnvironmentConfig
-    from heist_architect.agents.architect import ArchitectAgent
-    from heist_architect.agents.solver import SolverAgent
-    import glob
-    import re
-    
-    config = EnvironmentConfig(
-        grid_rows=args.grid_size,
-        grid_cols=args.grid_size,
-        start_pos=(1, 1),
-        vault_pos=(args.grid_size - 2, args.grid_size - 2),
-    )
-    
-    env = HeistEnvironment(config)
-    architect = ArchitectAgent(
-        grid_rows=config.grid_rows,
-        grid_cols=config.grid_cols,
-        budget=15
-    )
-    solver = SolverAgent(
-        grid_rows=config.grid_rows,
-        grid_cols=config.grid_cols,
-    )
-    
-    # Auto-find latest checkpoint if --checkpoint not specified
-    checkpoint = args.checkpoint
-    if checkpoint == 0:
-        # Try to find latest
-        pattern = os.path.join(args.save_dir, "architect_ep*.pt")
-        files = glob.glob(pattern)
-        if files:
-            episodes = []
-            for f in files:
-                match = re.search(r'architect_ep(\d+)\.pt', f)
-                if match:
-                    episodes.append(int(match.group(1)))
-            checkpoint = max(episodes) if episodes else 0
-    
-    # Load models if available
-    if checkpoint > 0:
-        arch_path = os.path.join(args.save_dir, f"architect_ep{checkpoint}.pt")
-        solver_path = os.path.join(args.save_dir, f"solver_ep{checkpoint}.pt")
-        
-        if os.path.exists(arch_path):
-            architect.load(arch_path)
-            print(f"Loaded Architect from {arch_path}")
-        if os.path.exists(solver_path):
-            solver.load(solver_path)
-            print(f"Loaded Solver from {solver_path}")
-    else:
-        print("No checkpoints found. Running with untrained agents.")
-    
-    # Generate layout
-    walls, cameras, guards = architect.generate_layout(temperature=0.5)
-    is_valid = env.set_layout(walls, cameras, guards)
-    
-    print(f"\n{'='*40}")
-    print(f"  Demo Episode")
-    print(f"  Level valid: {is_valid}")
-    print(f"  Walls: {len(walls)}, Cameras: {len(cameras)}, Guards: {len(guards)}")
-    print(f"{'='*40}\n")
-    
-    # Run solver
-    obs = env.reset()
-    solver.reset()
-    state = env.get_state_tensor()
-    
-    print("Initial grid:")
-    print(env.render_text())
-    print()
-    
-    for step in range(config.max_steps):
-        action = solver.select_action(state)
-        obs, reward, done, info = env.step(action)
-        state = env.get_state_tensor()
-        
-        if step % 20 == 0 or done:
-            action_name = env.ACTION_NAMES.get(action, "?")
-            print(f"Step {step:3d}: {action_name:5s} -> pos={env.solver_pos} "
-                  f"reward={reward:+.2f} status={info['status']}")
-        
-        if done:
-            break
-    
-    print(f"\nFinal grid:")
-    print(env.render_text())
-    print(f"\nOutcome: {info['status']}")
-    print(f"Total steps: {env.tick}")
+def _load_dotenv(path: Path = Path(".env")):
+    if not path.exists():
+        return
+
+    with path.open("r", encoding="utf-8") as f:
+        for raw_line in f:
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
 
 
-def cmd_visualize(args):
-    """Start the visualization server."""
-    from visualization.server import create_app
-    
-    app, socketio = create_app(
-        save_dir=args.save_dir,
-        grid_size=args.grid_size,
-    )
-    
-    print(f"\n{'='*40}")
-    print(f"  Heist Architect Visualization")
-    print(f"  Open: http://localhost:{args.port}")
-    print(f"{'='*40}\n")
-    
-    socketio.run(app, host='0.0.0.0', port=args.port, debug=False)
+def _episode_dirs(root: Path):
+    if not root.exists():
+        return []
+    return sorted([p for p in root.iterdir() if p.is_dir() and p.name.startswith("ep")])
+
+
+def cmd_list(args):
+    root = Path(args.root)
+    episodes = _episode_dirs(root)
+    if not episodes:
+        print(f"No episode folders found under: {root.resolve()}")
+        return
+
+    print(f"Checkpoint root: {root.resolve()}")
+    print(f"Episodes found: {len(episodes)}")
+    print(f"First: {episodes[0].name}")
+    print(f"Latest: {episodes[-1].name}")
+
+    latest = episodes[-1]
+    expected = ["architect.pt", "robber.pt", "metrics.json"]
+    print("\nLatest files:")
+    for name in expected:
+        p = latest / name
+        print(f"  {'OK ' if p.exists() else 'MISS'} {p}")
+
+
+def cmd_test(args):
+    root = Path(args.root)
+    episode_dir = root / args.episode
+    arch_path = episode_dir / "architect.pt"
+    robber_path = episode_dir / "robber.pt"
+    metrics_path = episode_dir / "metrics.json"
+
+    missing = [str(p) for p in [arch_path, robber_path, metrics_path] if not p.exists()]
+    if missing:
+        raise FileNotFoundError("Missing files:\n" + "\n".join(missing))
+
+    arch_state = torch.load(arch_path, map_location="cpu")
+    robber_state = torch.load(robber_path, map_location="cpu")
+
+    with open(metrics_path, "r", encoding="utf-8") as f:
+        metrics = json.load(f)
+
+    arch_tensors = len(arch_state)
+    robber_tensors = len(robber_state)
+    arch_params = sum(v.numel() for v in arch_state.values() if hasattr(v, "numel"))
+    robber_params = sum(v.numel() for v in robber_state.values() if hasattr(v, "numel"))
+
+    print(f"Episode: {args.episode}")
+    print(f"Architect tensors: {arch_tensors} | params: {arch_params:,}")
+    print(f"Robber tensors:    {robber_tensors} | params: {robber_params:,}")
+    print("\nMetrics:")
+    for k, v in metrics.items():
+        print(f"  {k}: {v}")
+
+
+def cmd_download(args):
+    env = os.environ.copy()
+    env["HEIST_HF_REPO"] = args.repo
+    env["HEIST_OUT_DIR"] = args.root
+    if args.max_passes is not None:
+        env["HEIST_MAX_PASSES"] = str(args.max_passes)
+
+    if not env.get("HF_TOKEN"):
+        raise RuntimeError("HF_TOKEN env var is required for download")
+
+    subprocess.run(["python", "tools/download_hf_checkpoints.py"], check=True, env=env)
+
+
+def cmd_dashboard(args):
+    cmd = [
+        "python",
+        "visualization/server.py",
+        "--root",
+        args.root,
+        "--host",
+        args.host,
+        "--port",
+        str(args.port),
+    ]
+    subprocess.run(cmd, check=True)
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(description="Heist v2 checkpoint utility")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_list = sub.add_parser("list", help="List downloaded checkpoint episodes")
+    p_list.add_argument("--root", default=str(DEFAULT_CHECKPOINT_ROOT))
+    p_list.set_defaults(func=cmd_list)
+
+    p_test = sub.add_parser("test", help="Validate a specific checkpoint folder")
+    p_test.add_argument("--root", default=str(DEFAULT_CHECKPOINT_ROOT))
+    p_test.add_argument("--episode", default="ep17000")
+    p_test.set_defaults(func=cmd_test)
+
+    p_dl = sub.add_parser("download", help="Download checkpoints from Hugging Face")
+    p_dl.add_argument("--repo", default=DEFAULT_REPO)
+    p_dl.add_argument("--root", default=str(DEFAULT_CHECKPOINT_ROOT))
+    p_dl.add_argument("--max-passes", type=int, default=8)
+    p_dl.set_defaults(func=cmd_download)
+
+    p_dash = sub.add_parser("dashboard", help="Launch checkpoint visualization dashboard")
+    p_dash.add_argument("--root", default=str(DEFAULT_CHECKPOINT_ROOT))
+    p_dash.add_argument("--host", default="127.0.0.1")
+    p_dash.add_argument("--port", type=int, default=5000)
+    p_dash.set_defaults(func=cmd_dashboard)
+
+    return parser
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Heist Architect: Adversarial RL Framework"
-    )
-    subparsers = parser.add_subparsers(dest="command", help="Command to run")
-    
-    # Train command
-    train_parser = subparsers.add_parser("train", help="Run adversarial training")
-    train_parser.add_argument("--episodes", type=int, default=500,
-                              help="Total training episodes (default: 500)")
-    train_parser.add_argument("--grid-size", type=int, default=20,
-                              help="Grid dimensions (NxN)")
-    train_parser.add_argument("--max-steps", type=int, default=200,
-                              help="Max steps per episode")
-    train_parser.add_argument("--solver-attempts", type=int, default=20,
-                              help="Solver attempts per layout")
-    train_parser.add_argument("--save-dir", default="checkpoints",
-                              help="Model save directory")
-    train_parser.add_argument("--log-dir", default="logs",
-                              help="Log directory")
-    train_parser.add_argument("--resume", action="store_true",
-                              help="Resume from latest checkpoint")
-    
-    # Demo command
-    demo_parser = subparsers.add_parser("demo", help="Run a demo episode")
-    demo_parser.add_argument("--grid-size", type=int, default=20)
-    demo_parser.add_argument("--save-dir", default="checkpoints")
-    demo_parser.add_argument("--checkpoint", type=int, default=0,
-                             help="Checkpoint episode to load (0 = auto-detect latest)")
-    
-    # Visualize command
-    viz_parser = subparsers.add_parser("visualize", help="Start visualization server")
-    viz_parser.add_argument("--port", type=int, default=5000)
-    viz_parser.add_argument("--grid-size", type=int, default=20)
-    viz_parser.add_argument("--save-dir", default="checkpoints")
-    
+    _load_dotenv()
+    parser = build_parser()
     args = parser.parse_args()
-    
-    if args.command == "train":
-        cmd_train(args)
-    elif args.command == "demo":
-        cmd_demo(args)
-    elif args.command == "visualize":
-        cmd_visualize(args)
-    else:
-        parser.print_help()
+    args.func(args)
 
 
 if __name__ == "__main__":

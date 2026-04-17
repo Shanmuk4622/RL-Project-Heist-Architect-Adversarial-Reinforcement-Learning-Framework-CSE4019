@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Heist v2 Interactive Arena</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="noise"></div>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <h1>Heist Architect vs Solver</h1>
+        <p>Interactive arena replay with architect construction and solver execution.</p>
+      </div>
+      <div class="status-pill" id="phasePill">Phase: Loading</div>
+    </header>
+
+    <section class="arena-layout">
+      <article class="arena-card">
+        <div class="arena-head">
+          <h2>Live Arena</h2>
+          <p id="stepLabel">Step -</p>
+        </div>
+        <canvas id="arenaCanvas" width="640" height="640"></canvas>
+      </article>
+
+      <aside class="control-card">
+        <h2>Controls</h2>
+        <label>Episode
+          <select id="episodeSelect"></select>
+        </label>
+        <label>Playback Speed
+          <input id="speedRange" type="range" min="0.25" max="3" step="0.25" value="1">
+          <span id="speedValue">1.00x</span>
+        </label>
+        <div class="btn-row">
+          <button id="playBtn">Play</button>
+          <button id="pauseBtn">Pause</button>
+          <button id="resetBtn">Reset</button>
+        </div>
+        <div class="toggle-row">
+          <label><input id="showPath" type="checkbox" checked> Solver Path</label>
+          <label><input id="showFov" type="checkbox" checked> Camera FOV</label>
+        </div>
+
+        <h3>Telemetry</h3>
+        <ul class="telemetry">
+          <li><span>Checkpoint Root</span><span id="rootPath">-</span></li>
+          <li><span>Episode Count</span><span id="episodeCount">-</span></li>
+          <li><span>Latest Episode</span><span id="latestEpisode">-</span></li>
+          <li><span>Architect Steps</span><span id="architectSteps">-</span></li>
+          <li><span>Solver Steps</span><span id="solverSteps">-</span></li>
+          <li><span>Current Action</span><span id="currentAction">-</span></li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="metrics-grid">
+      <article class="panel">
+        <h2>Robber Win Rate Trend</h2>
+        <canvas id="winRateChart"></canvas>
+      </article>
+      <article class="panel">
+        <h2>ELO Trend</h2>
+        <canvas id="eloChart"></canvas>
+      </article>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>

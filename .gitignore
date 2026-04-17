@@ -1,0 +1,48 @@
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build and packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environment folders
+.venv/
+venv/
+env/
+
+# Tool caches and test output
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json
+.idea/
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment/secrets
+.env
+.env.local
+.env.*.local
+
+# Hugging Face local cache
+.cache/huggingface/
+
+# Large checkpoint artifacts
+hf_checkpoints/
+
+# Keep placeholder files if needed
+!hf_checkpoints/.gitkeep
