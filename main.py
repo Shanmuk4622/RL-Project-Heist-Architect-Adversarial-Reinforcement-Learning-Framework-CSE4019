@@ -93,9 +93,6 @@ def cmd_download(args):
     if args.max_passes is not None:
         env["HEIST_MAX_PASSES"] = str(args.max_passes)
 
-    if not env.get("HF_TOKEN"):
-        raise RuntimeError("HF_TOKEN env var is required for download")
-
     subprocess.run(["python", "tools/download_hf_checkpoints.py"], check=True, env=env)
 
 

@@ -9,10 +9,8 @@ OUT_DIR = os.environ.get("HEIST_OUT_DIR", "hf_checkpoints")
 MAX_PASSES = int(os.environ.get("HEIST_MAX_PASSES", "8"))
 SLEEP_SECONDS = int(os.environ.get("HEIST_RETRY_SLEEP", "5"))
 
-if not TOKEN:
-    raise SystemExit("HF_TOKEN env var is required")
-
-api = HfApi(token=TOKEN)
+    
+api = HfApi(token=TOKEN) if TOKEN else HfApi()
 files = api.list_repo_files(repo_id=REPO_ID, repo_type="model")
 if not files:
     raise SystemExit("No files found in repo")

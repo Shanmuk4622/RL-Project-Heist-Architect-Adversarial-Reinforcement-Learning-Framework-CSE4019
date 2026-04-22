@@ -316,6 +316,8 @@ def api_episodes():
 def api_simulate(episode: str):
     return jsonify(_build_simulation(episode))
 
+import threading
+import webbrowser
 
 def main():
     parser = argparse.ArgumentParser(description="Heist v2 dashboard server")
@@ -326,6 +328,11 @@ def main():
 
     global CHECKPOINT_ROOT
     CHECKPOINT_ROOT = Path(args.root)
+
+    # Auto-open browser after a short delay
+    url = f"http://{args.host}:{args.port}"
+    print(f"Opening dashboard at {url} ...")
+    threading.Timer(1.5, lambda: webbrowser.open(url)).start()
 
     app.run(host=args.host, port=args.port, debug=False)
 

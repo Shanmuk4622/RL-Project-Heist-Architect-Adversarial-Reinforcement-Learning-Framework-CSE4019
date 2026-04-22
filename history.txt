@@ -1,0 +1,548 @@
+
+
+============================================================
+🚀 Starting training for 20000 episodes
+   Checkpoint every 500 episodes → HuggingFace
+   Curriculum: 4 stages
+============================================================
+Attempting to resume from latest checkpoint on HF...
+No checkpoints found, starting from scratch.
+Ep    50 | stage=Rookie       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+477 | elapsed=2.6m
+  📈 Curriculum advance → Stage 1: Intermediate
+Ep   100 | stage=Intermediate | robber_win=0.98 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+609 | elapsed=5.3m
+Ep   150 | stage=Intermediate | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+685 | elapsed=7.9m
+  📈 Curriculum advance → Stage 2: Expert
+Ep   200 | stage=Expert       | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+737 | elapsed=10.6m
+Ep   250 | stage=Expert       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+778 | elapsed=13.2m
+  📈 Curriculum advance → Stage 3: Master
+Ep   300 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+810 | elapsed=15.9m
+Ep   350 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+838 | elapsed=18.5m
+Ep   400 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+862 | elapsed=21.2m
+Ep   450 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+652 | elapsed=23.8m
+Ep   500 | stage=Master       | robber_win=0.93 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+562 | elapsed=26.5m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 38.9MB/s  
+New Data Upload: 100%
+ 62.2MB / 62.2MB, 38.9MB/s  
+  ✅ HF checkpoint pushed: ep00500
+Ep   550 | stage=Master       | robber_win=0.92 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+457 | elapsed=29.1m
+Ep   600 | stage=Master       | robber_win=0.90 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+413 | elapsed=31.8m
+Ep   650 | stage=Master       | robber_win=0.89 | rob_r=+0.2 arch_r=-0.2 | ELO diff=+401 | elapsed=34.3m
+Ep   700 | stage=Master       | robber_win=0.83 | rob_r=+0.1 arch_r=-0.1 | ELO diff=+300 | elapsed=37.0m
+Ep   750 | stage=Master       | robber_win=0.83 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+292 | elapsed=39.6m
+Ep   800 | stage=Master       | robber_win=0.90 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+416 | elapsed=42.2m
+Ep   850 | stage=Master       | robber_win=0.91 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+347 | elapsed=44.8m
+Ep   900 | stage=Master       | robber_win=0.90 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+382 | elapsed=47.4m
+Ep   950 | stage=Master       | robber_win=0.92 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+478 | elapsed=50.0m
+Ep  1000 | stage=Master       | robber_win=0.93 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+443 | elapsed=52.6m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 20.2MB/s  
+New Data Upload: 100%
+ 52.5MB / 52.5MB, 20.2MB/s  
+  ✅ HF checkpoint pushed: ep01000
+Ep  1050 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+594 | elapsed=55.3m
+Ep  1100 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+525 | elapsed=57.9m
+Ep  1150 | stage=Master       | robber_win=0.79 | rob_r=-0.0 arch_r=+0.0 | ELO diff=+255 | elapsed=60.5m
+Ep  1200 | stage=Master       | robber_win=0.82 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+532 | elapsed=63.1m
+Ep  1250 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+524 | elapsed=65.7m
+Ep  1300 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+582 | elapsed=68.3m
+Ep  1350 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+432 | elapsed=71.0m
+Ep  1400 | stage=Master       | robber_win=0.89 | rob_r=+0.2 arch_r=-0.2 | ELO diff=+259 | elapsed=73.5m
+Ep  1450 | stage=Master       | robber_win=0.90 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+465 | elapsed=76.2m
+Ep  1500 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+573 | elapsed=78.8m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 29.1MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 29.1MB/s  
+  ✅ HF checkpoint pushed: ep01500
+Ep  1550 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+662 | elapsed=81.4m
+Ep  1600 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+609 | elapsed=84.1m
+Ep  1650 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+684 | elapsed=86.7m
+Ep  1700 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+684 | elapsed=89.3m
+Ep  1750 | stage=Master       | robber_win=0.59 | rob_r=-0.7 arch_r=+0.7 | ELO diff=-381 | elapsed=92.0m
+Ep  1800 | stage=Master       | robber_win=0.10 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-569 | elapsed=94.6m
+Ep  1850 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-659 | elapsed=97.2m
+Ep  1900 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-719 | elapsed=99.8m
+Ep  1950 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-763 | elapsed=102.4m
+Ep  2000 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-798 | elapsed=105.0m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 37.4MB/s  
+New Data Upload: 100%
+ 52.4MB / 52.4MB, 37.4MB/s  
+  ✅ HF checkpoint pushed: ep02000
+Ep  2050 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-828 | elapsed=107.7m
+Ep  2100 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-853 | elapsed=110.3m
+Ep  2150 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-875 | elapsed=112.9m
+Ep  2200 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-895 | elapsed=115.6m
+Ep  2250 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-912 | elapsed=118.2m
+Ep  2300 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-928 | elapsed=120.8m
+Ep  2350 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-943 | elapsed=123.4m
+Ep  2400 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-956 | elapsed=126.0m
+Ep  2450 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-969 | elapsed=128.6m
+Ep  2550 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-991 | elapsed=134.0m
+Ep  2600 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1002 | elapsed=136.6m
+Ep  2650 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1011 | elapsed=139.2m
+Ep  2700 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1021 | elapsed=141.8m
+Ep  2750 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1029 | elapsed=144.4m
+Ep  2800 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1038 | elapsed=147.0m
+Ep  2850 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1046 | elapsed=149.7m
+Ep  2900 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1053 | elapsed=152.2m
+Ep  2950 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1060 | elapsed=154.9m
+Ep  3000 | stage=Master       | robber_win=0.28 | rob_r=-0.2 arch_r=+0.2 | ELO diff=+206 | elapsed=157.5m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 37.4MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 37.4MB/s  
+  ✅ HF checkpoint pushed: ep03000
+Ep  3050 | stage=Master       | robber_win=0.78 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+522 | elapsed=160.1m
+Ep  3100 | stage=Master       | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+632 | elapsed=162.7m
+Ep  3150 | stage=Master       | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+700 | elapsed=165.4m
+Ep  3250 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+643 | elapsed=170.6m
+Ep  3300 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+511 | elapsed=173.2m
+Ep  3350 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+527 | elapsed=175.8m
+Ep  3400 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+598 | elapsed=178.4m
+Ep  3450 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+677 | elapsed=181.0m
+Ep  3500 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+731 | elapsed=183.6m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 29.2MB/s  
+New Data Upload: 100%
+ 52.5MB / 52.5MB, 29.2MB/s  
+  ✅ HF checkpoint pushed: ep03500
+
+============================================================
+🚀 Starting training for 20000 episodes
+   Checkpoint every 500 episodes → HuggingFace
+   Curriculum: 4 stages
+============================================================
+Attempting to resume from latest checkpoint on HF...
+➡️ Found latest checkpoint: ep03500
+metrics.json: 100%
+ 225/225 [00:00<00:00, 24.2kB/s]
+ep03500/architect.pt: 100%
+ 34.1M/34.1M [00:02<00:00, 44.8MB/s]
+ep03500/robber.pt: 100%
+ 28.1M/28.1M [00:02<00:00, 24.9MB/s]
+✅ Successfully loaded state. Resuming from episode 3501
+Ep  3550 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+658 | elapsed=2.8m
+Ep  3600 | stage=Master       | robber_win=0.98 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+718 | elapsed=5.5m
+Ep  3650 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+762 | elapsed=8.3m
+Ep  3700 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+646 | elapsed=11.0m
+Ep  3750 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+709 | elapsed=13.7m
+Ep  3800 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+756 | elapsed=16.5m
+Ep  3900 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+765 | elapsed=21.9m
+Ep  3950 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+800 | elapsed=24.7m
+Ep  4000 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+830 | elapsed=27.4m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 20.7MB/s  
+New Data Upload: 100%
+ 62.2MB / 62.2MB, 20.7MB/s  
+  ✅ HF checkpoint pushed: ep04000
+Ep  4050 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+800 | elapsed=30.2m
+Ep  4100 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+774 | elapsed=33.0m
+Ep  4150 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+575 | elapsed=35.7m
+Ep  4200 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+663 | elapsed=38.4m
+Ep  4250 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+626 | elapsed=41.1m
+Ep  4300 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+653 | elapsed=43.8m
+Ep  4350 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+502 | elapsed=46.5m
+Ep  4400 | stage=Master       | robber_win=0.93 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+544 | elapsed=49.2m
+Ep  4450 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+645 | elapsed=51.9m
+Ep  4500 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+708 | elapsed=54.7m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 20.7MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 17.4MB/s  
+  ✅ HF checkpoint pushed: ep04500
+Ep  4550 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+691 | elapsed=57.5m
+Ep  4600 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+742 | elapsed=60.1m
+Ep  4650 | stage=Master       | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+781 | elapsed=62.9m
+Ep  4700 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+814 | elapsed=65.6m
+Ep  4750 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+841 | elapsed=68.2m
+Ep  4800 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+805 | elapsed=71.0m
+Ep  4850 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+834 | elapsed=73.7m
+Ep  4900 | stage=Master       | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+858 | elapsed=76.4m
+Ep  4950 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+879 | elapsed=79.1m
+Ep  5000 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+898 | elapsed=81.9m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 20.7MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 17.4MB/s  
+  ✅ HF checkpoint pushed: ep05000
+Ep  5050 | stage=Master       | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+916 | elapsed=84.6m
+Ep  5100 | stage=Master       | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+931 | elapsed=87.3m
+Ep  5150 | stage=Master       | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+946 | elapsed=90.1m
+Ep  5200 | stage=Master       | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+959 | elapsed=92.7m
+Ep  5250 | stage=Master       | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+971 | elapsed=95.5m
+Ep  5300 | stage=Master       | robber_win=1.00 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+983 | elapsed=98.2m
+Ep  5350 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+994 | elapsed=100.9m
+Ep  5400 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+877 | elapsed=103.6m
+Ep  5450 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+775 | elapsed=106.3m
+Ep  5500 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+707 | elapsed=109.0m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 22.2MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 18.7MB/s  
+  ✅ HF checkpoint pushed: ep05500
+Ep  5550 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+643 | elapsed=111.9m
+Ep  5600 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+707 | elapsed=114.6m
+Ep  5650 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+586 | elapsed=117.3m
+Ep  5700 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+670 | elapsed=120.0m
+Ep  5750 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+618 | elapsed=122.8m
+Ep  5800 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+638 | elapsed=125.6m
+Ep  5850 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+641 | elapsed=128.3m
+Ep  5900 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+592 | elapsed=131.1m
+Ep  5950 | stage=Master       | robber_win=0.89 | rob_r=+0.2 arch_r=-0.2 | ELO diff=+251 | elapsed=133.8m
+Ep  6050 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+556 | elapsed=139.3m
+Ep  6100 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+589 | elapsed=142.1m
+Ep  6150 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+671 | elapsed=144.8m
+Ep  6200 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+673 | elapsed=147.6m
+Ep  6250 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+681 | elapsed=150.3m
+Ep  6300 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+684 | elapsed=153.0m
+Ep  6350 | stage=Master       | robber_win=0.99 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+737 | elapsed=155.7m
+Ep  6400 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+620 | elapsed=158.4m
+Ep  6450 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+540 | elapsed=161.1m
+Ep  6500 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+603 | elapsed=163.9m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 16.4MB/s  
+New Data Upload: 100%
+ 52.4MB / 52.4MB, 13.8MB/s  
+  ✅ HF checkpoint pushed: ep06500
+Ep  6550 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+680 | elapsed=166.7m
+Ep  6600 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+575 | elapsed=169.4m
+Ep  6650 | stage=Master       | robber_win=0.93 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+498 | elapsed=172.1m
+Ep  6700 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+579 | elapsed=174.8m
+Ep  6750 | stage=Master       | robber_win=0.71 | rob_r=-0.4 arch_r=+0.4 | ELO diff=-293 | elapsed=177.6m
+Ep  6800 | stage=Master       | robber_win=0.56 | rob_r=+0.1 arch_r=-0.1 | ELO diff=+333 | elapsed=180.3m
+Ep  6850 | stage=Master       | robber_win=0.83 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+527 | elapsed=183.0m
+Ep  6900 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+594 | elapsed=185.7m
+Ep  6950 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+571 | elapsed=188.4m
+Ep  7000 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+585 | elapsed=191.1m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 18.3MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 15.4MB/s  
+  ✅ HF checkpoint pushed: ep07000
+Ep  7050 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+541 | elapsed=193.9m
+Ep  7100 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+530 | elapsed=196.7m
+Ep  7150 | stage=Master       | robber_win=0.91 | rob_r=+0.2 arch_r=-0.2 | ELO diff=+373 | elapsed=199.5m
+Ep  7200 | stage=Master       | robber_win=0.92 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+545 | elapsed=202.3m
+Ep  7250 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+489 | elapsed=205.1m
+Ep  7300 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+576 | elapsed=207.8m
+Ep  7350 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+490 | elapsed=210.5m
+Ep  7400 | stage=Master       | robber_win=0.93 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+459 | elapsed=213.3m
+Ep  7450 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+522 | elapsed=216.0m
+Ep  7500 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+583 | elapsed=218.8m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 22.2MB/s  
+New Data Upload: 100%
+ 52.5MB / 52.5MB, 18.7MB/s  
+  ✅ HF checkpoint pushed: ep07500
+Ep  7550 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+517 | elapsed=221.6m
+Ep  7600 | stage=Master       | robber_win=0.90 | rob_r=+0.2 arch_r=-0.2 | ELO diff=+293 | elapsed=224.3m
+Ep  7650 | stage=Master       | robber_win=0.89 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+451 | elapsed=227.1m
+Ep  7700 | stage=Master       | robber_win=0.93 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+472 | elapsed=229.8m
+Ep  7750 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+499 | elapsed=232.5m
+Ep  7800 | stage=Master       | robber_win=0.92 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+337 | elapsed=235.2m
+Ep  7850 | stage=Master       | robber_win=0.92 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+471 | elapsed=238.0m
+Ep  7900 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+460 | elapsed=240.6m
+Ep  7950 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+501 | elapsed=243.4m
+Ep  8000 | stage=Master       | robber_win=0.93 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+461 | elapsed=246.1m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 22.2MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 18.7MB/s  
+  ✅ HF checkpoint pushed: ep08000
+Ep  8050 | stage=Master       | robber_win=0.93 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+460 | elapsed=248.9m
+Ep  8100 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+573 | elapsed=251.6m
+Ep  8150 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+547 | elapsed=254.4m
+Ep  8200 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+504 | elapsed=257.1m
+Ep  8250 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+507 | elapsed=259.9m
+Ep  8300 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+444 | elapsed=262.6m
+Ep  8350 | stage=Master       | robber_win=0.91 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+317 | elapsed=265.3m
+Ep  8400 | stage=Master       | robber_win=0.92 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+443 | elapsed=268.1m
+Ep  8450 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+500 | elapsed=270.8m
+Ep  8500 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+463 | elapsed=273.5m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 19.4MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 16.3MB/s  
+  ✅ HF checkpoint pushed: ep08500
+Ep  8550 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+532 | elapsed=276.3m
+Ep  8600 | stage=Master       | robber_win=0.91 | rob_r=+0.2 arch_r=-0.2 | ELO diff=+343 | elapsed=279.1m
+Ep  8650 | stage=Master       | robber_win=0.92 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+518 | elapsed=281.8m
+Ep  8700 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+466 | elapsed=284.6m
+Ep  8750 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+489 | elapsed=287.3m
+Ep  8800 | stage=Master       | robber_win=0.93 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+396 | elapsed=290.0m
+Ep  8850 | stage=Master       | robber_win=0.90 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+361 | elapsed=292.7m
+Ep  8900 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+562 | elapsed=295.5m
+Ep  8950 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+569 | elapsed=298.2m
+Ep  9000 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+503 | elapsed=301.0m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 20.7MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 17.4MB/s  
+  ✅ HF checkpoint pushed: ep09000
+Ep  9050 | stage=Master       | robber_win=0.95 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+532 | elapsed=303.9m
+Ep  9100 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+449 | elapsed=306.6m
+Ep  9150 | stage=Master       | robber_win=0.93 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+475 | elapsed=309.3m
+Ep  9200 | stage=Master       | robber_win=0.94 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+515 | elapsed=312.1m
+Ep  9250 | stage=Master       | robber_win=0.96 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+573 | elapsed=314.9m
+Ep  9300 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+608 | elapsed=317.7m
+Ep  9350 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+637 | elapsed=320.5m
+Ep  9400 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+703 | elapsed=323.3m
+Ep  9450 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+703 | elapsed=326.0m
+Ep  9500 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+691 | elapsed=328.8m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 22.2MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 18.7MB/s  
+  ✅ HF checkpoint pushed: ep09500
+Ep  9550 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+742 | elapsed=331.6m
+Ep  9600 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+611 | elapsed=334.4m
+Ep  9650 | stage=Master       | robber_win=0.97 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+686 | elapsed=337.2m
+Ep  9700 | stage=Master       | robber_win=0.98 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+648 | elapsed=339.9m
+Ep  9750 | stage=Master       | robber_win=0.98 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+710 | elapsed=342.7m
+Ep  9800 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+706 | elapsed=345.5m
+Ep  9850 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+753 | elapsed=348.2m
+Ep  9900 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+790 | elapsed=351.0m
+Ep  9950 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+759 | elapsed=353.8m
+Ep 10000 | stage=Master       | robber_win=0.99 | rob_r=+0.4 arch_r=-0.4 | ELO diff=+795 | elapsed=356.5m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 19.4MB/s  
+New Data Upload: 100%
+ 52.4MB / 52.4MB, 16.4MB/s  
+  ✅ HF checkpoint pushed: ep10000
+Ep 10050 | stage=Master       | robber_win=1.00 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+825 | elapsed=359.3m
+Ep 10100 | stage=Master       | robber_win=0.99 | rob_r=+0.3 arch_r=-0.3 | ELO diff=+789 | elapsed=362.1m
+Ep 10150 | stage=Master       | robber_win=0.92 | rob_r=+0.2 arch_r=-0.2 | ELO diff=+405 | elapsed=364.8m
+Ep 10200 | stage=Master       | robber_win=0.55 | rob_r=-0.6 arch_r=+0.6 | ELO diff=-382 | elapsed=367.5m
+Ep 10250 | stage=Master       | robber_win=0.12 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-570 | elapsed=370.3m
+Ep 10300 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-659 | elapsed=373.0m
+Ep 10350 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-719 | elapsed=375.7m
+Ep 10400 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-763 | elapsed=378.4m
+Ep 10450 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-799 | elapsed=381.1m
+Ep 10500 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-828 | elapsed=383.9m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 23.9MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 20.1MB/s  
+  ✅ HF checkpoint pushed: ep10500
+Ep 10550 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-853 | elapsed=386.7m
+Ep 10600 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-875 | elapsed=389.5m
+Ep 10650 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-895 | elapsed=392.3m
+Ep 10700 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-912 | elapsed=395.1m
+Ep 10750 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-928 | elapsed=397.8m
+Ep 10800 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-943 | elapsed=400.5m
+Ep 10850 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-956 | elapsed=403.3m
+Ep 10900 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-969 | elapsed=406.0m
+Ep 10950 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-980 | elapsed=408.7m
+Ep 11000 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-991 | elapsed=411.5m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 19.4MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 16.3MB/s  
+  ✅ HF checkpoint pushed: ep11000
+Ep 11050 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1002 | elapsed=414.3m
+Ep 11100 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1011 | elapsed=417.0m
+Ep 11150 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1021 | elapsed=419.7m
+Ep 11200 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1029 | elapsed=422.4m
+Ep 11250 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1038 | elapsed=425.2m
+Ep 11300 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1046 | elapsed=427.9m
+Ep 11350 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1053 | elapsed=430.6m
+Ep 11400 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1060 | elapsed=433.3m
+Ep 11450 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1067 | elapsed=436.1m
+Ep 11500 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1074 | elapsed=438.8m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 22.2MB/s  
+New Data Upload: 100%
+ 52.5MB / 52.5MB, 18.7MB/s  
+  ✅ HF checkpoint pushed: ep11500
+Ep 11550 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1081 | elapsed=441.7m
+Ep 11600 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1087 | elapsed=444.5m
+Ep 11650 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1093 | elapsed=447.2m
+Ep 11700 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1099 | elapsed=449.9m
+Ep 11750 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1104 | elapsed=452.7m
+Ep 11800 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1110 | elapsed=455.4m
+Ep 11850 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1115 | elapsed=458.1m
+Ep 11900 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1120 | elapsed=460.9m
+Ep 11950 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1125 | elapsed=463.6m
+Ep 12000 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1130 | elapsed=466.4m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 22.2MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 18.7MB/s  
+  ✅ HF checkpoint pushed: ep12000
+Ep 12050 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1135 | elapsed=469.2m
+Ep 12100 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1139 | elapsed=471.9m
+Ep 12150 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1144 | elapsed=474.7m
+Ep 12200 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1148 | elapsed=477.4m
+Ep 12250 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1152 | elapsed=480.1m
+Ep 12300 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1157 | elapsed=482.9m
+Ep 12350 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1161 | elapsed=485.7m
+Ep 12400 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1165 | elapsed=488.4m
+Ep 12450 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1169 | elapsed=491.1m
+Ep 12500 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1172 | elapsed=493.9m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 22.2MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 18.7MB/s  
+  ✅ HF checkpoint pushed: ep12500
+Ep 12550 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1176 | elapsed=496.7m
+Ep 12600 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1180 | elapsed=499.5m
+Ep 12650 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1183 | elapsed=502.3m
+Ep 12700 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1187 | elapsed=505.0m
+Ep 12750 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1190 | elapsed=507.8m
+Ep 12800 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1193 | elapsed=510.6m
+Ep 12850 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1197 | elapsed=513.3m
+Ep 12900 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1200 | elapsed=516.0m
+Ep 12950 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1203 | elapsed=518.8m
+Ep 13000 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1206 | elapsed=521.6m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 16.4MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 13.8MB/s  
+  ✅ HF checkpoint pushed: ep13000
+Ep 13050 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1209 | elapsed=524.4m
+Ep 13100 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1212 | elapsed=527.2m
+Ep 13150 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1215 | elapsed=530.0m
+Ep 13200 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1218 | elapsed=532.7m
+Ep 13250 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1221 | elapsed=535.5m
+Ep 13300 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1224 | elapsed=538.2m
+Ep 13350 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1227 | elapsed=540.9m
+Ep 13400 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1229 | elapsed=543.7m
+Ep 13450 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1232 | elapsed=546.5m
+Ep 13500 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1235 | elapsed=549.3m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 19.4MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 16.3MB/s  
+  ✅ HF checkpoint pushed: ep13500
+Ep 13550 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1237 | elapsed=552.2m
+Ep 13600 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1240 | elapsed=555.0m
+Ep 13650 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1242 | elapsed=557.8m
+Ep 13700 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1245 | elapsed=560.6m
+Ep 13750 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1247 | elapsed=563.3m
+Ep 13800 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1250 | elapsed=566.1m
+Ep 13850 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1252 | elapsed=568.9m
+Ep 13900 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1254 | elapsed=571.7m
+Ep 13950 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1257 | elapsed=574.5m
+Ep 14000 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1259 | elapsed=577.3m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 23.9MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 20.1MB/s  
+  ✅ HF checkpoint pushed: ep14000
+Ep 14050 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1261 | elapsed=580.1m
+Ep 14100 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1264 | elapsed=582.9m
+Ep 14150 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1266 | elapsed=585.7m
+Ep 14200 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1268 | elapsed=588.5m
+Ep 14250 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1270 | elapsed=591.3m
+Ep 14300 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1272 | elapsed=594.1m
+Ep 14350 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1274 | elapsed=596.9m
+Ep 14400 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1276 | elapsed=599.6m
+Ep 14450 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1278 | elapsed=602.4m
+Ep 14500 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1280 | elapsed=605.2m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 23.9MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 20.1MB/s  
+  ✅ HF checkpoint pushed: ep14500
+Ep 14550 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1282 | elapsed=608.0m
+Ep 14600 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1284 | elapsed=610.8m
+Ep 14650 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1286 | elapsed=613.5m
+Ep 14700 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1288 | elapsed=616.3m
+Ep 14750 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1290 | elapsed=619.1m
+Ep 14800 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1292 | elapsed=621.8m
+Ep 14850 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1294 | elapsed=624.6m
+Ep 14900 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1296 | elapsed=627.4m
+Ep 14950 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1298 | elapsed=630.1m
+Ep 15000 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1299 | elapsed=632.9m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 20.7MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 17.4MB/s  
+  ✅ HF checkpoint pushed: ep15000
+Ep 15050 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1301 | elapsed=635.7m
+Ep 15100 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1303 | elapsed=638.4m
+Ep 15150 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1305 | elapsed=641.2m
+Ep 15200 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1307 | elapsed=644.0m
+Ep 15250 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1308 | elapsed=646.7m
+Ep 15300 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1310 | elapsed=649.5m
+Ep 15350 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1312 | elapsed=652.3m
+Ep 15400 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1313 | elapsed=655.1m
+Ep 15450 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1315 | elapsed=657.9m
+Ep 15500 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1317 | elapsed=660.6m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 20.7MB/s  
+New Data Upload: 100%
+ 52.3MB / 52.3MB, 17.4MB/s  
+  ✅ HF checkpoint pushed: ep15500
+Ep 15550 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1318 | elapsed=663.4m
+Ep 15600 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1320 | elapsed=666.1m
+Ep 15650 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1321 | elapsed=668.9m
+Ep 15700 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1323 | elapsed=671.6m
+Ep 15750 | stage=Master       | robber_win=0.00 | rob_r=-1.0 arch_r=+1.0 | ELO diff=-1325 | elapsed=674.3m
+
+
+============================================================
+🚀 Starting training for 30000 episodes
+   Checkpoint every 500 episodes → HuggingFace
+   Curriculum: 4 stages
+============================================================
+Attempting to resume from latest checkpoint on HF...
+➡️ Found latest checkpoint: ep15500
+✅ Successfully loaded state. Resuming from episode 15501
+Ep 15550 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+383 | elapsed=3.1m
+Ep 15600 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+570 | elapsed=6.3m
+Ep 15650 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+660 | elapsed=9.4m
+Ep 15700 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+719 | elapsed=12.6m
+Ep 15750 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+763 | elapsed=15.9m
+Ep 15800 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+799 | elapsed=19.2m
+Ep 15850 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+828 | elapsed=22.4m
+Ep 15900 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+853 | elapsed=25.6m
+Ep 15950 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+875 | elapsed=28.8m
+Ep 16000 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+895 | elapsed=32.0m
+Could not render content for 'application/vnd.jupyter.widget-view+json'
+{"version_major":2,"version_minor":0,"model_id":"5f5f0253aa084a00b636fb45da90cb24"}
+Could not render content for 'application/vnd.jupyter.widget-view+json'
+{"version_major":2,"version_minor":0,"model_id":"3127cd50009c415792533b8ca2c23116"}
+  ✅ HF checkpoint pushed: ep16000
+Ep 16050 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+912 | elapsed=35.3m
+Ep 16100 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+928 | elapsed=38.6m
+Ep 16150 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+943 | elapsed=41.8m
+Ep 16200 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+956 | elapsed=44.9m
+Ep 16250 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+969 | elapsed=48.0m
+Ep 16300 | stage=Master       | robber_win=1.00 | rob_r=+1.0 arch_r=-1.0 | ELO diff=+980 | elapsed=51.1m
+Ep 16350 | stage=Master       | robber_win=1.00 | rob_r=+2.0 arch_r=-2.0 | ELO diff=+991 | elapsed=54.3m
+Ep 16400 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1002 | elapsed=57.5m
+Ep 16450 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1011 | elapsed=60.7m
+Ep 16500 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1021 | elapsed=63.9m
+Could not render content for 'application/vnd.jupyter.widget-view+json'
+{"version_major":2,"version_minor":0,"model_id":"bac784ec28f64c6d887e310a7ec901b6"}
+Could not render content for 'application/vnd.jupyter.widget-view+json'
+{"version_major":2,"version_minor":0,"model_id":"4a16077553ed4841aa49c4c5ed82a4ea"}
+  ✅ HF checkpoint pushed: ep16500
+
+
+============================================================
+🚀 Starting training for 30000 episodes
+   Checkpoint every 500 episodes → HuggingFace
+   Curriculum: 4 stages
+============================================================
+Attempting to resume from latest checkpoint on HF...
+➡️ Found latest checkpoint: ep16500
+✅ Successfully loaded state. Resuming from episode 16501
+Ep 16550 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1029 | elapsed=3.1m
+Ep 16600 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1038 | elapsed=6.3m
+Ep 16650 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1046 | elapsed=9.4m
+Ep 16700 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1053 | elapsed=12.5m
+Ep 16750 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1060 | elapsed=15.7m
+Ep 16800 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1067 | elapsed=18.8m
+Ep 16850 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1074 | elapsed=21.9m
+Ep 16900 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1081 | elapsed=25.1m
+Ep 16950 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1087 | elapsed=28.2m
+Ep 17000 | stage=Master       | robber_win=1.00 | rob_r=+2.3 arch_r=-2.3 | ELO diff=+1093 | elapsed=31.3m
+Processing Files (2 / 2): 100%
+ 62.2MB / 62.2MB, 38.9MB/s  
+New Data Upload: 100%
+ 62.2MB / 62.2MB, 38.9MB/s  
+  ✅ HF checkpoint pushed: ep17000

@@ -128,3 +128,7 @@ Use this file as your operating checklist when working in this repo:
 3. For dashboard work, launch `main.py dashboard` and validate visual behavior.
 4. For training-history documentation updates, regenerate charts with `tools/generate_training_charts.py` and update README links.
 5. Before finishing, ensure no secrets are committed and checkpoint blobs remain untracked by git.
+
+## Recent Updates & Hotfixes
+- **Dashboard Auto-Launch**: `main.py dashboard` now automatically launches the user's default web browser upon starting the Flask server on port 5000 via a threaded timer in `visualization/server.py`.
+- **Hugging Face Public Checkpoints**: The `HF_TOKEN` requirement has been made explicitly optional in `main.py` and `tools/download_hf_checkpoints.py`, permitting unauthenticated bulk downloads of the 17,000 episodes directly from public Hugging Face spaces.
